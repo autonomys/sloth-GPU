@@ -9,3 +9,12 @@ fn legendre_symbol(a: u128, p: u128) -> u128 {
         return ls;
     }
 }
+
+/* 
+Compute the Legendre symbol a|p using Euler's criterion. 
+p is a prime, a is relatively prime to p 
+(if p divides a, then a|p = 0)
+
+Returns 1 if a has a square root modulo p, 
+0 otherwise.
+*/
