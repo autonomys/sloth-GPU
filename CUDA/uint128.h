@@ -1,12 +1,7 @@
 #pragma once
 
-/* these includes are not necessary when compiled with NVCC or visual studio
-and i don't know any other way to compile CUDA code, but here they are just in case
-
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-
-*/
 
 #include <math.h>
 
