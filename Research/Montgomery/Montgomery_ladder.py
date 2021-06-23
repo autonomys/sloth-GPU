@@ -1,73 +1,87 @@
 import random
-import math
-
-
-k=64
+from math import log2
+global_list = []
 
 def Modular_Multiplication(X,Y,M,mu):
-    T = X * Y
-    TH = T >> k
+    global global_list
 
-    T1 = TH * mu
-    T1H = T1 >> k
+    T = X * Y  # 512-bit (256 * 256)
+    #if (T > 2**512):
+    #    print("damn T")
+    TH = T >> k  # 256-bit (512 >> 256)
+    global_list.append(TH)
+    
+    T1 = TH * mu  # 512-bit (256 * 257)
+    #if (T1 > 2**512):  
+    #    print("damn T1")
+    T1H = T1 >> k  # 256-bit (512 >> 256)
 
-    T2 = T1H * M
-    Cbar = T - T2
-
-    T3 = Cbar - M
-    T4 = Cbar - 2*M
-
-    if(T4 >= 0):
-        results = T4
-    elif(T3 >= 0):
-        results = T3
+    T2 = T1H * M  # 512-bit (256 * 256)
+    #if (T2 > 2**512):
+    #    print("damn T2")
+    Cbar = T - T2  # 257-bit (512 - 512)
+    #Cbar = T - (((T >> k) * mu) >> k) * M
+    #if (Cbar > 2 ** 257):
+    #    print("damn Cbar")
+    T3 = Cbar - M  # 256-bit (257 - 256) 
+    #if T3 > (2**257):
+    #    print("damn T3")
+    T4 = Cbar - 2*M  # 257-bit (257 - 257)
+    #if (2*M - Cbar) > 2**257:
+    #    print("damn T4")
+    if(T4 >= 0):  # (257 comparison)
+        results = T4  # (257 =)
+    elif(T3 >= 0):  # (256 comparison)
+        results = T3  # (256 =)
     else:
-        results = Cbar
+        results = Cbar  # (257 =)
 
     return results
 
 
-
-p= random.randint(2**(k-1), 2**k-1)
-mu =((2**(2*k)//p))
+p = 115792089237316195423570985008687907853269984665640564039457584007913129639747
+k= int(log2(p))
+mu =(2**(2*(k)) // p)
+#mu = 2 ** 256
+#print(mu)
 A = random.randint(0,p-1)
 B = random.randint(0,p-1)
 
 Expected_Result = pow(A,B,p)
-"""
-Normal MONTGOMERY_LADDER
 
 C0=1
 C1=A
 for i in range(k-1,-1,-1):
     if(((B>>i)%2)==0):
-        C1 = (C0 * C1) % p
-        C0 = (C0 * C0) % p
-    else:
-        C0 = (C0 * C1) % p
-        C1 = (C1 * C1) % p
-
-if (Expected_Result == C0):
-    print("works")
-else:
-    print("dayum")
-"""
+        res1 = log2(C0 * C1 * mu)
+        res2 = log2(C0 * C0 * mu)
+        if(512+256 < res1):
+            print("res1 overflowing")
+        if(512+256 < res2):
+            print("res2 overflowing")
 
 
-C0=1
-C1=A
-for i in range(k-1,-1,-1):
-    if(((B>>i)%2)==0):
         C1 = Modular_Multiplication(C0,C1,p,mu)
         C0 = Modular_Multiplication(C0,C0,p,mu)
 
     else:
+        res1 = log2(C0 * C1 * mu)
+        res2 = log2(C1 * C1 * mu)
+        if(512+256 < res1):
+            print("res1 overflowing")
+        if(512+256 < res2):
+            print("res2 overflowing")
         C0 = Modular_Multiplication(C0,C1,p,mu)
         C1 = Modular_Multiplication(C1,C1,p,mu)
 
 if (Expected_Result == C0):
-    print("works")
+    print("SUCCESS")
 else:
-    print("dayum")
+    print("FAIL")
+
+temp = max(global_list)
+#print(temp)
+#print(mu)
+#print(temp*mu)
 
 
