@@ -5,17 +5,23 @@ global_list = []
 def Modular_Multiplication(X,Y,M,mu):
     global global_list
 
+    #if X > 2**256:
+    #    print("damn X")
+    #if Y > 2**256:
+    #    print("damn Y")
     T = X * Y  # 512-bit (256 * 256)
     #if (T > 2**512):
     #    print("damn T")
     TH = T >> k  # 256-bit (512 >> 256)
     global_list.append(TH)
-    
+    #if TH > 2**256:
+    #    print("damn TH")
     T1 = TH * mu  # 512-bit (256 * 257)
     #if (T1 > 2**512):  
     #    print("damn T1")
     T1H = T1 >> k  # 256-bit (512 >> 256)
-
+    #if T1H > 2**256:
+    #    print("damn T1H")
     T2 = T1H * M  # 512-bit (256 * 256)
     #if (T2 > 2**512):
     #    print("damn T2")
