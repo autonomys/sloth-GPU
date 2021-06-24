@@ -34,8 +34,7 @@ def legendre(a, p):
         return ls
 
 
-def original_sqrt(data, prime):
-    exponent = (prime+1) // 4
+def original_sqrt(data, prime, exponent):
     if data > prime:
         raise ValueError("data must be smaller than prime")
 
@@ -54,8 +53,7 @@ def original_sqrt(data, prime):
             data += prime
 
 
-def optimized_sqrt(data, prime):
-    exponent = (prime+1) // 4
+def optimized_sqrt(data, prime, exponent):
     if data > prime:
         raise ValueError("data must be smaller than prime")
 
@@ -82,8 +80,9 @@ check = True  # assume tests will pass
 for x in range(test_amount): 
     prime = 115792089237316195423570985008687907853269984665640564039457584007913129639747
     data = random.randint(0, prime)
+    exponent = (prime+1) // 4
 
-    if optimized_sqrt(data, prime) != original_sqrt(data, prime):
+    if optimized_sqrt(data, prime, exponent) != original_sqrt(data, prime, exponent):
         check = False
         break
 
