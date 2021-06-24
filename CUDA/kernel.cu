@@ -9,7 +9,7 @@ using namespace std;
 
 __global__ void device_mul(unsigned long long* a, unsigned long long* b, uint128_t* dres)
 {
-	*dres = mul64x2(*a, *b);
+	*dres = mul64x2(*a, *b);  // kernel to multiply two 64-bits
 }
 
 int main()
@@ -22,17 +22,22 @@ int main()
 
 	unsigned long long * da, * db;
 	uint128_t * dres;
-	cudaMalloc(&da, sizeof(unsigned long long));
+	// malloc for cuda
+	cudaMalloc(&da, sizeof(unsigned long long));  
 	cudaMalloc(&db, sizeof(unsigned long long));
 	cudaMalloc(&dres, 2 * sizeof(unsigned long long));
 
+	// memcpy for cuda
 	cudaMemcpy(da, &a, sizeof(unsigned long long), cudaMemcpyHostToDevice);
 	cudaMemcpy(db, &b, sizeof(unsigned long long), cudaMemcpyHostToDevice);
 
+	// kernel call
 	device_mul << <1, 1 >> > (da, db, dres);
 
+	// memcpy back to CPU
 	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
 
+	// print
 	cout << bitset<64>(res.high) << endl << bitset<64>(res.low) << endl;
 
 	return 0;
