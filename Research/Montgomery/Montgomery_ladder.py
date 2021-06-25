@@ -66,9 +66,13 @@ for i in range(k-1,-1,-1):
         if(512+256 < res2):
             print("res2 overflowing")
 
-
         C1 = Modular_Multiplication(C0,C1,p,mu)
         C0 = Modular_Multiplication(C0,C0,p,mu)
+
+        if(C0 > 2**256):
+            print("damn C0")
+        if(C1 > 2**256):
+            print("damn C1")
 
     else:
         res1 = log2(C0 * C1 * mu)
@@ -79,6 +83,11 @@ for i in range(k-1,-1,-1):
             print("res2 overflowing")
         C0 = Modular_Multiplication(C0,C1,p,mu)
         C1 = Modular_Multiplication(C1,C1,p,mu)
+
+        if(C0 > 2**256):
+            print("damn C0")
+        if(C1 > 2**256):
+            print("damn C1")
 
 if (Expected_Result == C0):
     print("SUCCESS")
