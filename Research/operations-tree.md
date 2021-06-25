@@ -23,12 +23,35 @@
                     - operator `|` (lhs: 128-bit, rhs: 128-bit)
                 - operator `|` (lhs:256-bit, rhs: 256-bit)
                     - operator `|` (lhs: 128-bit, rhs: 128-bit)
-            - mul256-257(256-bit, 257-bit) LEFT HERE
+            - mul256-257(256-bit, 257-bit) 
+                - mul256x2(256-bit, 256-bit)
+                    - mul128x2(128-bit, 128-bit)
+                        - mul64x2(64-bit, 64-bit)
+                    - operator `+` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 128-bit)
+                - operator `+` (lhs: 256-bit, rhs: 256-bit)
+                    - operator `+` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 128-bit)
             - operator `-` (lhs: 512-bit, rhs: 512-bit)
+                - operator `-` (lhs: 256-bit, rhs: 256-bit)
+                    - operator `-` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `-` (lhs: 128-bit, rhs: 64-bit)
+                - operator `-` (lhs: 256-bit, rhs: 64-bit)
+                    - operator `-` (lhs: 128-bit, rhs: 64-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 64-bit)
+                - operator `<` (lhs: 256-bit, rhs: 256-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `>` (lhs: 128-bit, rhs: 128-bit)
             - operator `-` (lhs: 512-bit, rhs: 256-bit)
-            - operator `==` (lhs: 512-bit, rhs: 0)
-            - operator `==` (lhs: 256-bit, rhs: 0) 
-            - operator `<<` (lhs: 512-bit, rhs: 1)
+                - operator `-` (lhs: 256-bit, rhs: 256-bit)
+                    - operator `-` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `-` (lhs: 128-bit, rhs: 64-bit)
+                - operator `-` (lhs: 256-bit, rhs: 64-bit)
+                    - operator `-` (lhs: 128-bit, rhs: 64-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 64-bit)
+            - isEven(512-bit)
         - operator `-` (lhs: 256-bit, rhs: 64-bit)
             - operator `-` (lhs: 128-bit, rhs: 64-bit)
             - operator `<` (lhs: 128-bit, rhs: 64-bit)
@@ -49,31 +72,32 @@
     - isOdd(256-bit)
 
 
+
 ## Required Arithmetic Operations Set
 *512-bit operations:*
-- operator `>>` (lhs: 512-bit, rhs:64-bit)
+- operator `>>` (lhs: 512-bit, rhs: 64-bit)
 - operator `-` (lhs: 512-bit, rhs: 512-bit)
 - operator `-` (lhs: 512-bit, rhs: 256-bit)
-- operator `==` (lhs: 512-bit, rhs: 0)
 - mul256-257(256-bit, 257-bit)
-- mul256x2(256-bit, 256-bit)  
+- mul256x2(256-bit, 256-bit)
+- isEven(512-bit)
+
 
 *256-bit operations:*
 - operator `=` (lhs: 256-bit, rhs: 256-bit)
 - operator `>` (lhs: 256-bit, rhs: 256-bit)
 - operator `>>` (lhs: 256-bit, rhs: 32-bit)
+- operator `<<` (lhs: 256-bit, rhs: 32-bit)
 - operator `==` (lhs: 256-bit, rhs: 256-bit)
 - operator `==` (lhs: 256-bit, rhs: 64-bit)
-- operator `==` (lhs: 256-bit, rhs: 0) 
+- operator `<` (lhs: 256-bit, rhs: 256-bit)
 - operator `-` (lhs: 256-bit, rhs: 256-bit)
 - operator `-` (lhs: 256-bit, rhs: 64-bit)
+- operator `+` (lhs: 256-bit, rhs: 256-bit)
+- operator `|` (lhs:256-bit, rhs: 256-bit)
 - isEven(256-bit)
 - isOdd(256-bit)
-
-
-
-
-
+- mul128x2(128-bit, 128-bit)
 
 
 *128-bit operations:*
@@ -87,8 +111,6 @@
 - operator `==` (lhs: 128-bit, rhs: 64-bit)
 - operator `-` (lhs: 128-bit, rhs: 128-bit)
 - operator `-` (lhs: 128-bit, rhs: 64-bit)
+- operator `+` (lhs: 128-bit, rhs: 128-bit)
 - operator `|` (lhs: 128-bit, rhs: 128-bit)
-
-
-
-
+- mul64x2(64-bit, 64-bit)
