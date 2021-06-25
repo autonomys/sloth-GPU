@@ -28,6 +28,7 @@
             - operator `-` (lhs: 512-bit, rhs: 256-bit)
             - operator `==` (lhs: 512-bit, rhs: 0)
             - operator `==` (lhs: 256-bit, rhs: 0) 
+            - operator `<<` (lhs: 512-bit, rhs: 1)
         - operator `-` (lhs: 256-bit, rhs: 64-bit)
             - operator `-` (lhs: 128-bit, rhs: 64-bit)
             - operator `<` (lhs: 128-bit, rhs: 64-bit)
