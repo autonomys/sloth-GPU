@@ -4,6 +4,12 @@ def DecimalToBinary(n):  # returns a string of bit representation of the num
 def BinaryToDecimal(n):
     return int(n,2)
 
+def chunks_64(op):
+    op_array = []
+    for iter in range(len(op)//64):
+        op_array.append(op[iter*64: (iter+1)*64])
+    return op_array
+
 # put operand 1 as decimal
 operand1_decimal = 1289312831239555555
 op1 = DecimalToBinary(operand1_decimal)
@@ -34,14 +40,10 @@ op1 = "0" * temp + op1
 temp = op2_len - len(op2)
 op2 = "0" * temp + op2
 
-op1_array = []
-for iter in range(len(op1)//64):
-    op1_array.append(op1[iter*64: (iter+1)*64])
 
+op1_array = chunks_64(op1)
+op2_array = chunks_64(op2)
 
-op2_array = []
-for iter in range(len(op2)//64):
-    op2_array.append(op2[iter*64: (iter+1)*64])
 
 print("Operand 1:")
 print(op1_array)
