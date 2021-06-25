@@ -37,8 +37,6 @@
             - operator `|` (lhs: 128-bit, rhs: 128-bit)
         - operator `==` (lhs: 256-bit, rhs: 256-bit)
             - operator `==` (lhs: 128-bit, rhs: 128-bit)
-    - operator `==` (lhs: 256-bit, rhs: 64-bit)
-        - operator `==` (lhs: 128-bit, rhs: 64-bit)
     - Montomgery(256-bit, 254-bit, 256-bit)
     - operator `=` (lhs: 256-bit, rhs: 256-bit)
         - operator `=` (lhs: 128-bit, rhs: 128-bit)
