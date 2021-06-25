@@ -26,7 +26,7 @@ def jacobi(a, n):
 
 
 def legendre(a, p):
-    ls = pow(a, (p-1)/2, p)
+    ls = pow(a, (p-1)//2, p)
 
     if ls == (p - 1):
         return 0
@@ -57,7 +57,7 @@ def optimized_sqrt(data, prime, exponent):
     if data > prime:
         raise ValueError("data must be smaller than prime")
 
-    if jacobi(data, prime) == 1:
+    if legendre(data, prime) == 1:
         data = pow(data, exponent, prime)
         if data % 2 == 1:
             data = prime - data
