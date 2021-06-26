@@ -13,21 +13,68 @@ __global__ void device_mul(unsigned long long* a, unsigned long long* b, uint128
 }
 
 __global__ void device_equals(uint128_t* h1, uint128_t* h2, uint128_t * h3)
-{
+{   
+	/* SETUP
+	h1 != h2, 
+    h2 = h3
+	*/
 	if (*h1 == *h2) {
-		printf("Fail for a==b\n");
+		printf("Fail for h1==h2\n");
 	}
 	else {
-		printf("Success for a==b\n");
+		printf("Success for h1==h2\n");
 	}
 	if (*h2 == *h3) {
-		printf("Success for b==c\n");
+		printf("Success for h2==h3\n");
 	}
 	else {
-		printf("Fail for b==c\n");
+		printf("Fail for h2==h3\n");
 	}
 
 }
+
+__global__ void device_greater(uint128_t* h1, uint128_t* h2, uint128_t * h3)
+{
+	/* SETUP
+	h1 < h2,
+	h2 = h3
+	*/
+	if (*h1 > *h2) {
+		printf("Fail for h1 > h2\n");
+	}
+	else {
+		printf("Success for h1 > h2\n");
+	}
+	if (*h2 > *h3) {
+		printf("Fail for h2 > h3\n");
+	}
+	else {
+		printf("Success for h2 > h3\n");
+	}
+
+}
+
+__global__ void device_lesser(uint128_t* h1, uint128_t* h2, uint128_t * h3)
+{
+	/* SETUP
+	h1 < h2,
+	h2 = h3
+	*/
+	if (*h1 < *h2) {
+		printf("Success for h1 < h2\n");
+	}
+	else {
+		printf("Fail for h1 < h2\n");
+	}
+	if (*h2 < *h3) {
+		printf("Fail for h2 < h3\n");
+	}
+	else {
+		printf("Success for h2 < h3\n");
+	}
+
+}
+
 
 int main()
 {
@@ -58,7 +105,9 @@ int main()
 
 	// Multiplication test end
 
-	// Equals sign test
+	/////////////////////////
+
+	// `==` test start
 
 	uint128_t h1, h2, h3;
 	uint128_t *d1, *d2, *d3;
@@ -82,6 +131,23 @@ int main()
 
 	device_equals << <1, 1 >> > (d1, d2, d3);
 
+	// `==` test end
+
+	/////////////////////////
+
+	// `>` test start
+
+	device_greater << <1, 1 >> > (d1, d2, d3);
+
+	// `>` test end
+
+	/////////////////////////
+
+	// `<` test start
+
+	device_lesser << <1, 1 >> > (d1, d2, d3);
+
+	// `<` test end
 
 	return 0;
 }
