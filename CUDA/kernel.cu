@@ -123,14 +123,24 @@ __global__ void device_lshift(uint128_t* h4, uint128_t *dres)
 	*dres = *h4 << 1;
 }
 
-__global__ void device_sub_128_128(uint128_t* h1, uint128_t* h2, uint128_t *dres)
+__global__ void device_sub_128_128(uint128_t* h6, uint128_t* h7, uint128_t *dres)
 {
-	*dres = *h1 - *h2;
+	*dres = *h6 - *h7;
 }
 
-__global__ void device_sub_128_64(uint128_t* h1, uint128_t *dres)
+__global__ void device_sub_128_64(uint128_t* h6, uint128_t *dres)
 {
-	*dres = *h1 - 1;
+	*dres = *h6 - 1;
+}
+
+__global__ void device_add(uint128_t* h5, uint128_t* h7, uint128_t *dres)
+{
+	*dres = *h5 + *h7;
+}
+
+__global__ void device_bitwise_or(uint128_t* h5, uint128_t* h7, uint128_t *dres)
+{
+	*dres = *h5 | *h7;
 }
 
 
@@ -286,9 +296,9 @@ int main()
 	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
-	cout << "Left shift - input1 print:\n" << bitset<64>(h6.high)<< bitset<64>(h6.low) << endl;
-	cout << "Left shift - input2 print:\n" << bitset<64>(h7.high) << bitset<64>(h7.low) << endl;
-	cout << "Left shift - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
+	cout << "Substraction - input1 print:\n" << bitset<64>(h6.high)<< bitset<64>(h6.low) << endl;
+	cout << "Substraction - input2 print:\n" << bitset<64>(h7.high) << bitset<64>(h7.low) << endl;
+	cout << "Substraction - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
 
 	cout << "`- (128-128)` test end" << endl;
 	
@@ -300,11 +310,39 @@ int main()
 	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
-	cout << "Left shift - input1 print:\n" << bitset<64>(h6.high) << bitset<64>(h6.low) << endl;
-	cout << "Left shift - input2 print:\n" << "1" << endl;
-	cout << "Left shift - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
+	cout << "Substraction - input1 print:\n" << bitset<64>(h6.high) << bitset<64>(h6.low) << endl;
+	cout << "Substraction - input2 print:\n" << "1" << endl;
+	cout << "Substraction - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
 
 	cout << "`- (128-64)` test end" << endl;
+
+	cout << "/////////////////////////" << endl;
+
+	cout << "`+` test start" << endl;
+
+	device_add << <1, 1 >> > (d5, d7, dres);
+	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
+
+	cout << "Addition - input1 print:\n" << bitset<64>(h5.high) << bitset<64>(h5.low) << endl;
+	cout << "Addition - input2 print:\n" << bitset<64>(h7.high) << bitset<64>(h7.low) << endl;
+	cout << "Addition - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
+
+	cout << "`+` test end" << endl;
+
+	cout << "/////////////////////////" << endl;
+
+	cout << "`|` test start" << endl;
+
+	device_bitwise_or << <1, 1 >> > (d5, d7, dres);
+	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
+
+	cout << "Bitwise OR - input1 print:\n" << bitset<64>(h5.high) << bitset<64>(h5.low) << endl;
+	cout << "Bitwise OR - input2 print:\n" << bitset<64>(h7.high) << bitset<64>(h7.low) << endl;
+	cout << "Bitwise OR - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
+
+	cout << "`|` test end" << endl;
 
 	
 
