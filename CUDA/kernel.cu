@@ -30,7 +30,6 @@ __global__ void device_equals(uint128_t* h1, uint128_t* h2, uint128_t * h3)
 	else {
 		printf("Fail for h2==h3\n");
 	}
-
 }
 
 __global__ void device_greater(uint128_t* h1, uint128_t* h2, uint128_t * h3)
@@ -51,7 +50,6 @@ __global__ void device_greater(uint128_t* h1, uint128_t* h2, uint128_t * h3)
 	else {
 		printf("Success for h2 > h3\n");
 	}
-
 }
 
 __global__ void device_lesser(uint128_t* h1, uint128_t* h2, uint128_t * h3)
@@ -72,7 +70,6 @@ __global__ void device_lesser(uint128_t* h1, uint128_t* h2, uint128_t * h3)
 	else {
 		printf("Success for h2 < h3\n");
 	}
-
 }
 
 
@@ -94,7 +91,6 @@ __global__ void device_lesser_64(uint128_t* h4, unsigned long long* a, unsigned 
 	else {
 		printf("Success for b < h4\n");
 	}
-
 }
 
 __global__ void device_equals_64(uint128_t* h4, unsigned long long* a, unsigned long long* b)
@@ -115,7 +111,16 @@ __global__ void device_equals_64(uint128_t* h4, unsigned long long* a, unsigned 
 	else {
 		printf("Fail for b == h4\n");
 	}
+}
 
+__global__ void device_rshift(uint128_t* h4, uint128_t *dres)
+{
+	*dres = *h4 >> 1;
+}
+
+__global__ void device_lshift(uint128_t* h4, uint128_t *dres)
+{
+	*dres = *h4 << 1;
 }
 
 
@@ -216,12 +221,39 @@ int main()
 
 	/////////////////////////
 
-	// `< (128-64)` test start
+	// `== (128-64)` test start
 
 	device_equals_64 << <1, 1 >> > (d4, da, db);
 
-	// `< (128-64)` test end
+	// `== (128-64)` test end
 
+	/////////////////////////
+
+	// `>>` test start
+
+	device_rshift << <1, 1 >> > (d3, dres);
+
+	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+	cout << "Right shift - input print:\n" << bitset<64>(h3.high) << endl << bitset<64>(h3.low) << endl;
+	cout << "Right shift - result print:\n" << bitset<64>(res.high) << endl << bitset<64>(res.low) << endl;
+
+	// `>>` test end
+
+	/////////////////////////
+
+	// `>>` test start
+
+	device_lshift << <1, 1 >> > (d4, dres);
+
+	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+	cout << "Left shift - input print:\n" << bitset<64>(h4.high) << endl << bitset<64>(h4.low) << endl;
+	cout << "Left shift - result print:\n" << bitset<64>(res.high) << endl << bitset<64>(res.low) << endl;
+
+	// `>>` test end
+
+	
+
+	
 
 	return 0;
 }
