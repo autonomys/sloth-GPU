@@ -167,6 +167,23 @@ __host__ __device__ __forceinline__ uint256_t operator+(const uint256_t& x, cons
 	return z;
 }
 
+__host__ __device__ __forceinline__ bool isEven(const uint256_t& x)
+{
+	if x.low.low & 1 {
+		return false;
+	}
+	return true;
+}
+
+__host__ __device__ __forceinline__ bool isOdd(const uint256_t& x)
+{
+	if x.low.low & 1 {
+		return true;
+	}
+	return false;
+}
+
+
 /* ZA WARUDOOOOOOOO */
 __device__ __forceinline__ uint256_t mul128x2(const uint128_t& a, const uint128_t& b)
 {  // uses KARATSUBA multiplication
