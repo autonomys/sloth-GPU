@@ -8,30 +8,30 @@
 // custom imports
 #include "uint128.h"
 
-/* 
-This library will divide 256-bit unsigned integers into 2 (namely `low` and `high`) 128-bit unsigned integers. 
+/*
+This library will divide 256-bit unsigned integers into 2 (namely `low` and `high`) 128-bit unsigned integers.
 All the implemented operations are done via manipulating `low` and `high` 128-bit parts.
 
 Representation: say Q is a 256-bit unsigned integer.
 
-Q = XXX.............................XXX 
-                (256-bit)
+Q = XXX.............................XXX
+				(256-bit)
 
 
 Q = XXX..............|..............XXX
-       (high 128-bit) (low 128-bit)
+	   (high 128-bit) (low 128-bit)
 
 
 HOWEVER, keep in mind that, these `low` and `high` bits will be represented as decimal numbers when printed.
 In other words, simply concatenating the DECIMAL representations of the `low` and `high` bits will produce wrong results.
 
-Instead, bit representation of the `low` and `high` bits should be concatenated and printed, 
+Instead, bit representation of the `low` and `high` bits should be concatenated and printed,
 then, a "binary->decimal" converter should be used
 
 This library uses `uint128` custom library for its building blocks.
 Understanding how `uint128` library works is crucial for understanding the functionalities of this library.
 
-This library is not commented where the concept is borrowed from `uint128` library. 
+This library is not commented where the concept is borrowed from `uint128` library.
 This library is only commented where the concept is unique to this library (not common with `uint128`)
 */
 
@@ -160,7 +160,7 @@ __host__ __device__ __forceinline__ uint256_t operator+(const uint256_t& x, cons
 {
 	uint256_t z;
 
-	z.low = x.low + y.low;  
+	z.low = x.low + y.low;
 
 	z.high = x.high + y.high + (z.low < x.low);
 
@@ -169,7 +169,7 @@ __host__ __device__ __forceinline__ uint256_t operator+(const uint256_t& x, cons
 
 __host__ __device__ __forceinline__ bool isEven(const uint256_t& x)
 {
-	if x.low.low & 1 {
+	if (x.low.low & 1) {
 		return false;
 	}
 	return true;
@@ -177,7 +177,7 @@ __host__ __device__ __forceinline__ bool isEven(const uint256_t& x)
 
 __host__ __device__ __forceinline__ bool isOdd(const uint256_t& x)
 {
-	if x.low.low & 1 {
+	if (x.low.low & 1) {
 		return true;
 	}
 	return false;
@@ -195,7 +195,7 @@ __device__ __forceinline__ uint256_t mul128x2(const uint128_t& a, const uint128_
 
 					a = a.high|a.low
 					b = b.high|b.low
-	               				   x
+								   x
 					----------------
 						a.low*b.low
 
@@ -206,7 +206,7 @@ __device__ __forceinline__ uint256_t mul128x2(const uint128_t& a, const uint128_
 								   +
 		----------------------------
 		   c.high    |    c.low
-	
+
 	*/
 
 	uint256_t c;
@@ -214,7 +214,7 @@ __device__ __forceinline__ uint256_t mul128x2(const uint128_t& a, const uint128_
 
 	c.low = mul64x2(a.low, b.low); // a.low * b.low
 
-	temp = mul64x2(a.high, b.low); 
+	temp = mul64x2(a.high, b.low);
 	// low part of (a.high * b.low) will be added to c.low.high
 	// high part of (a.high * b.low) will be added to c.high.low
 	c.low.high += temp.low;  // after this addition, there may be a carry
