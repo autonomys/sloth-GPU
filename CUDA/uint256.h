@@ -1,11 +1,11 @@
+// safe include
 #pragma once
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
+// C++ imports
 #include <cinttypes>
-#include <string>
 #include <math.h>
+
+// custom imports
 #include "uint128.h"
 
 /* 
@@ -167,26 +167,60 @@ __host__ __device__ __forceinline__ uint256_t operator+(const uint256_t& x, cons
 	return z;
 }
 
-/* ZA WARUDOOOOOOOOOOO */
+/* ZA WARUDOOOOOOOO */
 __device__ __forceinline__ uint256_t mul128x2(const uint128_t& a, const uint128_t& b)
-{  // refer to the comments of host function host128x2, logic is the same
+{  // uses KARATSUBA multiplication
+	/*
+	a = a.high|a.low
+	b = b.high|b.low
+
+	a*b can be represented as follows:
+
+					a = a.high|a.low
+					b = b.high|b.low
+	               				   x
+					----------------
+						a.low*b.low
+
+				a.high*b.low
+				a.low*b.high
+
+		a.high*b.high
+								   +
+		----------------------------
+		   c.high    |    c.low
+	
+	*/
+
 	uint256_t c;
 	uint128_t temp;
 
-	c.low = mul64_128(a.low, b.low); //alow * blow
-	
-	temp = mul64_128(a.high, b.low);
-	c.low.high += temp.low;
-	c.high.low = temp.high + (c.low.high < temp.low); //ahigh * blow
+	c.low = mul64x2(a.low, b.low); // a.low * b.low
 
-	temp = mul64_128(a.low, b.high);
-	c.low.high += temp.low;
-	c.high.low += temp.high + (c.low.high < temp.low);
-	c.high.high += (c.high.low < temp.high); //alow * bhigh
+	temp = mul64x2(a.high, b.low); 
+	// low part of (a.high * b.low) will be added to c.low.high
+	// high part of (a.high * b.low) will be added to c.high.low
+	c.low.high += temp.low;  // after this addition, there may be a carry
+	// if overflow occurs, the result `c.low.high` will be smaller than both`temp.low` 
+	// consider 1 digit decimal addition -> 9+3=2
+	// 2 < 9  &&  2 < 3
+	// so, if `c.low.high` is smaller than `temp.low`, we know that there is a carry
+	c.high.low = temp.high + (c.low.high < temp.low); // add the potential carry with a boolean condition to evade branching
+	// for this addition, there cannot be overflow, since it's the first time we are putting something into c.high
+	// also, temp.high cannot be too large to overflow with a carry
 
-	temp = mul64_128(a.high, b.high);
-	c.high.low += temp.low;
-	c.high.high = temp.high + (c.high.low < temp.low); //ahigh * bhigh
+	temp = mul64x2(a.low, b.high);
+	// low part of (a.low * b.high) will be added to c.low.high
+	// high part of (a.low * b.high) will be added to c.high.low
+	c.low.high += temp.low;  // after this addition, there may be a carry
+	c.high.low += temp.high + (c.low.high < temp.low);// add the potential carry with a boolean condition to evade branching
+	// however, there can be another carry because of the last addition (c.high already had some bits in it before here) 
+	c.high.high += (c.high.low < temp.high); // add the potential carry into c.high.high
+
+	temp = mul64x2(a.high, b.high);  // a.high * b.high
+	c.high.low += temp.low;  // add temp.low to high.low
+	// but a carry might happen
+	c.high.high = temp.high + (c.high.low < temp.low); // add the carry from previous step, along with the temp.high
 
 	return c;
 }
