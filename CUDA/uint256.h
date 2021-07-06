@@ -136,7 +136,7 @@ __host__ __device__ __forceinline__ uint256_t operator|(const uint256_t& x, cons
 	return z;
 }
 
-__host__ __device__ uint256_t operator-(const uint256_t& x, const uint256_t& y)
+__host__ __device__ __forceinline__ uint256_t operator-(const uint256_t& x, const uint256_t& y)
 {
 	uint256_t z;
 
@@ -146,7 +146,7 @@ __host__ __device__ uint256_t operator-(const uint256_t& x, const uint256_t& y)
 	return z;
 }
 
-__host__ __device__ uint256_t operator-(const uint256_t& x, const uint64_t& y)
+__host__ __device__ __forceinline__ uint256_t operator-(const uint256_t& x, const uint64_t& y)
 {
 	uint256_t z;
 
