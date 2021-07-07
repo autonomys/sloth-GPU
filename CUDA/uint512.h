@@ -75,6 +75,16 @@ __host__ __device__ __forceinline__ uint512_t operator-(const uint512_t& x, cons
 	return z;
 }
 
+__host__ __device__ __forceinline__ uint512_t operator-(const uint512_t& x, const uint256_t& y)
+{
+	uint512_t z;
+
+	z.low = x.low - y;
+	z.high = x.high - (x.low < y);
+
+	return z;
+}
+
 /* WRYYYYYYYYYYYYYYYYYYYYYYYYYYYY */
 __device__ __forceinline__ uint512_t mul256x2(const uint256_t& a, const uint256_t& b)
 {
@@ -115,12 +125,10 @@ __device__ __forceinline__ uint512_t mul257_256(const uint512_t& a, const uint25
 	return c;
 }
 
-__host__ __device__ __forceinline__ uint512_t operator-(const uint512_t& x, const uint256_t& y)
+__host__ __device__ __forceinline__ bool isEven(const uint512_t& x)
 {
-	uint512_t z;
-
-	z.low = x.low - y;
-	z.high = x.high - (x.low < y);
-
-	return z;
+	if (x.low.low.low & 1) {
+		return false;
+	}
+	return true;
 }
