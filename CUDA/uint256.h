@@ -3,7 +3,6 @@
 
 // C++ imports
 #include <cinttypes>
-#include <math.h>
 
 // custom imports
 #include "uint128.h"
