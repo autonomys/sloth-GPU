@@ -65,7 +65,7 @@ public:
 	}
 };
 
-__host__ uint512_t operator-(const uint512_t& x, const uint512_t& y)
+__host__ __device__ __forceinline__ uint512_t operator-(const uint512_t& x, const uint512_t& y)
 {
 	uint512_t z;
 
@@ -81,34 +81,36 @@ __device__ __forceinline__ uint512_t mul256x2(const uint256_t& a, const uint256_
 	uint512_t c;
 	uint256_t temp;
 
-	c.low = mul64_256(a.low, b.low); //alow * blow
+	c.low = mul64_256(a.low, b.low); 
 
 	temp = mul64_256(a.high, b.low);
 	c.low.high = c.low.high + temp.low;
-	c.high.low = temp.high + (c.low.high < temp.low); //ahigh * blow
+	c.high.low = temp.high + (c.low.high < temp.low);
 
 	temp = mul64_256(a.low, b.high);
 	c.low.high = c.low.high + temp.low;
 	c.high.low = c.high.low + temp.high + (c.low.high < temp.low);
-	c.high.high = c.high.high + (c.high.low < temp.high); //alow * bhigh
+	c.high.high = c.high.high + (c.high.low < temp.high);
 
 	temp = mul64_256(a.high, b.high);
 	c.high.low = c.high.low + temp.low;
-	c.high.high = temp.high + (c.high.low < temp.low); //ahigh * bhigh
+	c.high.high = temp.high + (c.high.low < temp.low);
 
 	return c;
 }
 
-__host__ __device__ __forceinline__ uint512_t mul257_256(const uint512_t& a, const uint256_t& b)
+__device__ __forceinline__ uint512_t mul257_256(const uint512_t& a, const uint256_t& b)
 {
-    // currently UNFINISHED
-    
 	uint512_t c;  // inside this, we are only storing a 257 bit number (we are not utilizing all 512 bits here)
 
 	c = mul256x2(a.low, b);  // multiply the 256 bits of a, with the whole b, and store the result in c
 
-	if (a.high.low.low & 1)  // might be unnecessary, result of the mul256x2 operation do not fits in 256-bits
-		c.high = c.high + b;  // 
+	if (a.high.low.low & 1)  // might be unnecessary, if a is 257 bit, a.high.low.low & 1 should always return true
+		c.high = c.high + b;  // add the whole b to the high part of c
+		// the reasoning behind the above line is: 
+		// since the 257th bit of a is 1, we will shift b by 256 bit,
+		// and add this to the c
+		// which is effectively adding b to the high bits of the c
 
 	return c;
 }
