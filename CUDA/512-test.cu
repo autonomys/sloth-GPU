@@ -7,8 +7,8 @@
 
 using namespace std;
 
-__global__ void device_mul_257x256(uint512_t *d_mu, uint256_t *d_b, uint512_t *d_res) {
-	*d_res = mul257x256(*d_mu, *d_b);
+__global__ void device_mul_257_256(uint512_t *d_mu, uint256_t *d_b, uint512_t *d_res) {
+	*d_res = mul257_256(*d_mu, *d_b);
 }
 
 int main()
@@ -34,7 +34,7 @@ int main()
 	cudaMemcpy(d_mu, &mu, 8 * sizeof(unsigned long long), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_b, &b, 4 * sizeof(unsigned long long), cudaMemcpyHostToDevice);
 
-	device_mul_257x256 << < 1, 1 >> > (d_mu, d_b, d_res);
+	device_mul_257_256 << < 1, 1 >> > (d_mu, d_b, d_res);
 
 	cudaMemcpy(&res512, d_res, 8 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
 

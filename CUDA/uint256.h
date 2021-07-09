@@ -231,12 +231,12 @@ __device__ __forceinline__ uint256_t mul128x2(const uint128_t& a, const uint128_
 	c.low.high += temp.low;  // after this addition, there may be a carry
 	c.high.low += temp.high + (c.low.high < temp.low);// add the potential carry with a boolean condition to evade branching
 	// however, there can be another carry because of the last addition (c.high already had some bits in it before here) 
-	c.high.high += (c.high.low < temp.high); // add the potential carry into c.high.high
+	c.high.high = (c.high.low < temp.high); // add the potential carry into c.high.high
 
 	temp = mul64x2(a.high, b.high);  // a.high * b.high
 	c.high.low += temp.low;  // add temp.low to high.low
 	// but a carry might happen
-	c.high.high = temp.high + (c.high.low < temp.low); // add the carry from previous step, along with the temp.high
+	c.high.high += temp.high + (c.high.low < temp.low); // add the carry from previous step, along with the temp.high
 
 	return c;
 }

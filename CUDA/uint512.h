@@ -91,20 +91,20 @@ __device__ __forceinline__ uint512_t mul256x2(const uint256_t& a, const uint256_
 	uint512_t c;
 	uint256_t temp;
 
-	c.low = mul64_256(a.low, b.low); 
+	c.low = mul128x2(a.low, b.low); 
 
-	temp = mul64_256(a.high, b.low);
+	temp = mul128x2(a.high, b.low);
 	c.low.high = c.low.high + temp.low;
 	c.high.low = temp.high + (c.low.high < temp.low);
 
-	temp = mul64_256(a.low, b.high);
+	temp = mul128x2(a.low, b.high);
 	c.low.high = c.low.high + temp.low;
 	c.high.low = c.high.low + temp.high + (c.low.high < temp.low);
-	c.high.high = c.high.high + (c.high.low < temp.high);
+	c.high.high = (c.high.low < temp.high);
 
-	temp = mul64_256(a.high, b.high);
+	temp = mul128x2(a.high, b.high);
 	c.high.low = c.high.low + temp.low;
-	c.high.high = temp.high + (c.high.low < temp.low);
+	c.high.high = c.high.high + temp.high + (c.high.low < temp.low);
 
 	return c;
 }
