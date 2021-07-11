@@ -51,9 +51,29 @@ public:
 	{
 		uint512_t z;
 
-		z.low = low >> shift;
-		z.low = (high << (256 - shift)) | z.low;
-		z.high = high >> shift;
+		if (shift >= 512)
+		{
+			// z = 0
+		}
+		else if (shift > 256)
+		{
+			z.low = high >> (shift - 256);
+		}
+		else if (shift == 0)
+		{
+			z.high = high;
+			z.low = low;
+		}
+		else if (shift < 256)
+		{
+			z.low = low >> shift;
+			z.low = (high << (256 - shift)) | z.low;
+			z.high = high >> shift;
+		}
+		else
+		{
+			z.low = high;
+		}
 
 		return z;
 	}
@@ -91,7 +111,7 @@ __device__ __forceinline__ uint512_t mul256x2(const uint256_t& a, const uint256_
 	uint512_t c;
 	uint256_t temp;
 
-	c.low = mul128x2(a.low, b.low); 
+	c.low = mul128x2(a.low, b.low);
 
 	temp = mul128x2(a.high, b.low);
 	c.low.high = c.low.high + temp.low;
@@ -125,10 +145,30 @@ __device__ __forceinline__ uint512_t mul257_256(const uint512_t& a, const uint25
 	return c;
 }
 
-__host__ __device__ __forceinline__ bool isEven(const uint512_t& x)
+__host__ __device__ __forceinline__ bool operator<(const uint512_t& x, const uint256_t& y)
 {
-	if (x.low.low.low & 1) {
+	if (!(x.high.high.high ^ 0 && x.high.high.low ^ 0 && x.high.low.high ^ 0 && x.high.low.low ^ 0))  // xoring all bits with 0
+	{  // means high bits of 512 is 0
+		if (x.low < y) {
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+	else {
 		return false;
 	}
-	return true;
+}
+
+__host__ __device__ __forceinline__ bool operator<(const uint512_t& x, const uint512_t& y)
+{
+	if (x.high < y.high)
+		return true;
+	else if (x.high > y.high)
+		return false;
+	else if (x.low < y.low)
+		return true;
+	else
+		return false;
 }

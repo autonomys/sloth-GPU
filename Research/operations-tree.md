@@ -51,7 +51,7 @@
                 - operator `-` (lhs: 256-bit, rhs: 64-bit)
                     - operator `-` (lhs: 128-bit, rhs: 64-bit)
                     - operator `<` (lhs: 128-bit, rhs: 64-bit)
-            - isEven(512-bit)
+            - TODO
         - operator `-` (lhs: 256-bit, rhs: 64-bit)
             - operator `-` (lhs: 128-bit, rhs: 64-bit)
             - operator `<` (lhs: 128-bit, rhs: 64-bit)

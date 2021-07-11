@@ -10,24 +10,24 @@
 #include <math.h>
 
 
-/* 
-This library will divide 128-bit unsigned integers into 2 (namely `low` and `high`) 64-bit unsigned integers. 
+/*
+This library will divide 128-bit unsigned integers into 2 (namely `low` and `high`) 64-bit unsigned integers.
 All the implemented operations are done via manipulating `low` and `high` 64-bit parts.
 
 Representation: say Q is a 128-bit unsigned integer.
 
-Q = XXX...........................XXX 
-                (128-bit)
+Q = XXX...........................XXX
+				(128-bit)
 
 
 Q = XXX.............|.............XXX
-       (high 64-bit) (low 64-bit)
+	   (high 64-bit) (low 64-bit)
 
 
 HOWEVER, keep in mind that, these `low` and `high` bits will be represented as decimal numbers when printed.
 In other words, simply concatenating the DECIMAL representations of the `low` and `high` bits will produce wrong results.
 
-Instead, bit representation of the `low` and `high` bits should be concatenated and printed, 
+Instead, bit representation of the `low` and `high` bits should be concatenated and printed,
 then, a "binary->decimal" converter should be used
 */
 
@@ -35,7 +35,7 @@ then, a "binary->decimal" converter should be used
 class uint128_t
 {
 public:
-	
+
 	unsigned long long low;   // storing the low 64-bit of the 128-bit integer
 	unsigned long long high;  // storing the high 64-bit of the 128-bit integer
 
@@ -65,45 +65,69 @@ public:
 
 	__host__ __device__ __forceinline__ uint128_t operator<<(const unsigned& shift)  // left shift operation
 	{
+
 		uint128_t z;  // shift operator does not override the original number, instead, returns another one
 
-		z.high = high << shift;  // left shift the `high` bits by the given amount
-		z.high = (low >> (64 - shift)) | z.high;  // some of the `low` bits may become new `high` bits after the shift.
-		/*
-		say, shift amount is = 3
+		if (shift >= 128)  // if shift amount is larger or equal to 128, it means we are going out of boundary. So simply return 0
+		{
+			// z = 0
+		}
+		else if (shift > 64)  // if 128 > shift > 64
+		{
+			// high bits will be discarded, and some of the low bits will be transferred to high bits
+			// no low bits, will stay in the low part, so low bits will be 0
+			// z.low = 0  // is same as not writing this
+			z.high = low >> (shift - 64);
+		}
+		else if (shift == 0)  // ?
+		{
+			z.high = high;
+			z.low = low;
+		}
+		else if (shift < 64)  // beautiful comments present below <3
+		{
+			z.high = high << shift;  // left shift the `high` bits by the given amount
+			z.high = (low >> (64 - shift)) | z.high;  // some of the `low` bits may become new `high` bits after the shift.
+			/*
+			say, shift amount is = 3
 
-		input:
-		Q = KLM..........PRS|ABC...........XYZ
-			   (high 64-bit) (low 64-bit)		
+			input:
+			Q = KLM..........PRS|ABC...........XYZ
+				   (high 64-bit) (low 64-bit)
 
 
-		intermediate results after trivial shift:
-		Q = ..........PRS000|...........XYZ000
-			   (high 64-bit) (low 64-bit)
+			intermediate results after trivial shift:
+			Q = ..........PRS000|...........XYZ000
+				   (high 64-bit) (low 64-bit)
 
-		result we want:
-		Q = ..........PRSABC|...........XYZ000
-			   (high 64-bit) (low 64-bit)
+			result we want:
+			Q = ..........PRSABC|...........XYZ000
+				   (high 64-bit) (low 64-bit)
 
-		
-		When we shift the `high` bits, the least significant `3` bits of the `high` bits will be 0 (000 after PRS).
-		Also, the most significant `3` bits of the `low` bits will be discarded after the shift operation (ABC).
-		We basically want to add these `3` discarded `low` bits to the least significant `3` bits of the `high` bits:
 
-		000..00000ABC  ->  61*0 + ABC
-		.......PRS000  ->  high bits, shifted to the right
+			When we shift the `high` bits, the least significant `3` bits of the `high` bits will be 0 (000 after PRS).
+			Also, the most significant `3` bits of the `low` bits will be discarded after the shift operation (ABC).
+			We basically want to add these `3` discarded `low` bits to the least significant `3` bits of the `high` bits:
 
-		we can achieve [.......PRS000] by: 
-		high << shift;
+			000..00000ABC  ->  61*0 + ABC
+			.......PRS000  ->  high bits, shifted to the right
 
-		we can achieve [000..00000ABC] by:
-		low >> (64 - shift);
+			we can achieve [.......PRS000] by:
+			high << shift;
 
-		This addition between bits can be performed with | (or) operation. 
-		low >> (64 - shift)) | high;
-		*/
-	 
-		z.low = low << shift;
+			we can achieve [000..00000ABC] by:
+			low >> (64 - shift);
+
+			This addition between bits can be performed with | (or) operation.
+			low >> (64 - shift)) | high;
+			*/
+
+			z.low = low << shift;
+		}
+		else  // shift == 64
+		{  // this scenario is explained above
+			z.high = low;
+		}
 
 		return z;
 	}
@@ -112,9 +136,30 @@ public:
 	{  // look at the above comments for left shift, it's the same logic
 		uint128_t z;
 
-		z.low = low >> shift;
-		z.low = (high << (64 - shift)) | z.low;
-		z.high = high >> shift;
+		
+		if (shift >= 128)
+		{
+			// z = 0
+		}
+		else if (shift > 64)
+		{
+			z.low = high >> (shift - 64);
+		}
+		else if (shift == 0)
+		{
+			z.high = high;
+			z.low = low;
+		}
+		else if (shift < 64)
+		{
+			z.low = low >> shift;
+			z.low = (high << (64 - shift)) | z.low;
+			z.high = high >> shift;
+		}
+		else
+		{
+			z.low = high;
+		}
 
 		return z;
 	}
@@ -170,7 +215,7 @@ __host__ __device__ __forceinline__ bool operator<(const uint128_t& l, const uin
 }
 
 __host__ __device__ __forceinline__ bool operator>(const uint128_t& l, const uint128_t& r)
-{ 
+{
 	if (l.high > r.high)  // if high bits are greater, we don't need to check low bits
 		return true;
 	else if (l.high < r.high)  // if high bits are smaller, we don't need to check low bits
