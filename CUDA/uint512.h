@@ -147,28 +147,19 @@ __device__ __forceinline__ uint512_t mul257_256(const uint512_t& a, const uint25
 
 __host__ __device__ __forceinline__ bool operator<(const uint512_t& x, const uint256_t& y)
 {
-	if (!(x.high.high.high ^ 0 && x.high.high.low ^ 0 && x.high.low.high ^ 0 && x.high.low.low ^ 0))  // xoring all bits with 0
-	{  // means high bits of 512 is 0
-		if (x.low < y) {
+	if ((x.high.high.high ^ 0) | (x.high.high.low ^ 0) | (x.high.low.high ^ 0) | (x.high.low.low ^ 0))
+	{  // means high bits of x is not completely 0, so it's bigger than y
+		return false;
+	}
+	else  // means high bits of x is completely 0, so we have to investigate further
+	{
+		if (x.low < y) 
+		{
 			return true;
 		}
-		else {
+		else 
+		{
 			return false;
 		}
 	}
-	else {
-		return false;
-	}
-}
-
-__host__ __device__ __forceinline__ bool operator<(const uint512_t& x, const uint512_t& y)
-{
-	if (x.high < y.high)
-		return true;
-	else if (x.high > y.high)
-		return false;
-	else if (x.low < y.low)
-		return true;
-	else
-		return false;
 }

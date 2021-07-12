@@ -38,12 +38,9 @@ __device__ uint256_t modular_multiplication(uint256_t x, uint256_t y, uint256_t 
 	uint512_t t3 = cbar - p;
 	uint512_t t4 = cbar - p - p;
 
-	uint512_t p512;
-	p512.low = p;
-
-	if (t4 < p512)
+	if (t4 < p)
 		return t4.low;
-	else if (t3 < p512)
+	else if (t3 < p)
 		return t3.low;
 	else
 		return cbar.low;
@@ -75,6 +72,7 @@ __device__ uint256_t montgomery_exponentiation(uint256_t a, uint256_t exp, uint2
 __global__ void montgomery_caller(uint256_t *a, uint256_t exp, uint256_t p, uint512_t mu, unsigned k) 
 {
 	*a = montgomery_exponentiation(*a, exp, p, mu, k);
+	
 }
 
 __device__ bool legendre(uint256_t a, uint256_t p, uint512_t mu, unsigned k)

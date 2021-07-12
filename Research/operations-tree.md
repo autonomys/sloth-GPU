@@ -51,7 +51,10 @@
                 - operator `-` (lhs: 256-bit, rhs: 64-bit)
                     - operator `-` (lhs: 128-bit, rhs: 64-bit)
                     - operator `<` (lhs: 128-bit, rhs: 64-bit)
-            - TODO
+            - operator `<` (lhs: 512-bit, rhs: 256-bit)
+                - operator `<` (lhs: 256-bit, rhs: 256-bit)
+                    - operator `<` (lhs: 128-bit, rhs: 128-bit)
+                    - operator `>` (lhs: 128-bit, rhs: 128-bit)
         - operator `-` (lhs: 256-bit, rhs: 64-bit)
             - operator `-` (lhs: 128-bit, rhs: 64-bit)
             - operator `<` (lhs: 128-bit, rhs: 64-bit)
@@ -80,7 +83,7 @@
 - operator `-` (lhs: 512-bit, rhs: 256-bit)
 - mul256-257(256-bit, 257-bit)
 - mul256x2(256-bit, 256-bit)
-- isEven(512-bit)
+- operator `<` (lhs: 512-bit, rhs: 256-bit)
 
 
 *256-bit operations:*
