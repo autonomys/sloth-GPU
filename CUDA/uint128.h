@@ -251,7 +251,7 @@ __host__ __device__ __forceinline__ uint128_t operator+(const uint128_t& x, cons
 	return z;
 }
 
-__host__ uint128_t operator-(const uint128_t& x, const uint128_t& y)
+__host__ __device__ uint128_t operator-(const uint128_t& x, const uint128_t& y)
 { // reverse logic of addition, look at the comments of addition
 	uint128_t z;
 
