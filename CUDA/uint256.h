@@ -3,7 +3,6 @@
 
 // C++ imports
 #include <cinttypes>
-#include <math.h>
 
 // custom imports
 #include "uint128.h"
@@ -74,9 +73,29 @@ public:
 	{
 		uint256_t z;
 
-		z.high = high << shift;
-		z.high = (low >> (128 - shift)) | z.high;
-		z.low = low << shift;
+		if (shift >= 256)
+		{
+			// z = 0
+		}
+		else if (shift > 128)
+		{
+			z.high = low >> (shift - 128);
+		}
+		else if (shift == 0)
+		{
+			z.high = high;
+			z.low = low;
+		}
+		else if (shift < 128)
+		{
+			z.high = high << shift; 
+			z.high = (low >> (128 - shift)) | z.high;  
+			z.low = low << shift;
+		}
+		else  // shift == 128
+		{
+			z.high = low;
+		}
 
 		return z;
 	}
@@ -86,9 +105,29 @@ public:
 	{
 		uint256_t z;
 
-		z.low = low >> shift;
-		z.low = (high << (128 - shift)) | z.low;
-		z.high = high >> shift;
+		if (shift >= 256)
+		{
+			// z = 0
+		}
+		else if (shift > 128)
+		{
+			z.low = high >> (shift - 128);
+		}
+		else if (shift == 0)
+		{
+			z.high = high;
+			z.low = low;
+		}
+		else if (shift < 128)
+		{
+			z.low = low >> shift;
+			z.low = (high << (128 - shift)) | z.low;
+			z.high = high >> shift;
+		}
+		else
+		{
+			z.low = high;
+		}
 
 		return z;
 	}

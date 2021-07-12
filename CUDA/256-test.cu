@@ -339,6 +339,29 @@ int main()
 
 	cout << "`isOdd` test end" << endl;
 
+	cout << "/////////////////////////" << endl;
+
+	cout << "Multiplication test 2 start" << endl;
+
+	a.low = std::bitset<64>(std::string("1010011111000100000010110101110001110111001110111000111110000001")).to_ullong();
+	a.high = std::bitset<64>(std::string("1111111011110000010101100101001101101011010001011010001010110000")).to_ullong();
+	b.low = std::bitset<64>(std::string("1010011111000100000010110101110001110111001110111000111110000001")).to_ullong();
+	b.high = std::bitset<64>(std::string("1111111011110000010101100101001101101011010001011010001010110000")).to_ullong();
+
+	cudaMemcpy(da, &a, 2 * sizeof(unsigned long long), cudaMemcpyHostToDevice);
+	cudaMemcpy(db, &b, 2 * sizeof(unsigned long long), cudaMemcpyHostToDevice);
+
+	device_mul << <1, 1 >> > (da, db, dres);
+
+	cudaMemcpy(&res, dres, 4 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+
+	cout << "Multiplication operand1:\n" << bitset<64>(a.high) << bitset<64>(a.low) << endl;
+	cout << "Multiplication operand2:\n" << bitset<64>(b.high) << bitset<64>(b.low) << endl;
+
+	cout << "Multiplication test result:\n" << bitset<64>(res.high.high) << bitset<64>(res.high.low) << bitset<64>(res.low.high) << bitset<64>(res.low.low) << endl;
+
+	cout << "Multiplication test 2 end" << endl;
+
 
 
 	return 0;
