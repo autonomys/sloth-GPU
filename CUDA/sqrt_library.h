@@ -94,3 +94,20 @@ __global__ void legendre_caller(uint256_t *a, uint256_t p, uint512_t mu, unsigne
         printf("failed");
     }
 }
+
+__global__ void sqrt_permutation(uint256_t *a, uint256_t exp, uint256_t p, uint512_t mu, unsigned k) {
+
+	if (legendre(*a, p, mu, k)) {
+		*a = montgomery_exponentiation(*a, exp, p, mu, k);
+		if (isOdd(*a)) {
+			*a = p - *a;
+		}
+	}
+	else {
+		*a = p - *a;
+		*a = montgomery_exponentiation(*a, exp, p, mu, k);
+		if (isEven(*a)) {
+			*a = p - *a;
+		}
+	}
+}

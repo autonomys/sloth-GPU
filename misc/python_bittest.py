@@ -1,3 +1,6 @@
+from math import log2
+
+
 def DecimalToBinary(n):  # returns a string of bit representation of the num
     return "{0:b}".format(n)  
 
@@ -13,29 +16,38 @@ def chunks_64(op):
 # put operand 1 as bit
 #operand1_decimal = 1289312831239555555
 #op1 = DecimalToBinary(operand1_decimal)
-op1 = "00100000011110010101100110011010001010110100001001110010010000110000000000000100010011110011001101101000100111010111001111010101"
+op1 = "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111100111100"
 operand1_decimal = BinaryToDecimal(op1)
 
 # put operand2 as bit
 #operand2_decimal = 1290390120391092390
 #op2 = DecimalToBinary(operand2_decimal)
-op2 = "00110001001101101010001000011100100100011100010110111110001111000000000101100000100011110110100110011111111100111000111101101111"
+op2 = "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111101000011"
 operand2_decimal = BinaryToDecimal(op2)
 
-# DEFINE THE OEPRATION HERE: excepted result as decimal
-excepted_result_decimal = operand1_decimal * operand2_decimal
-
 # put the result to be tested as bits
-to_be_tested = "0000011000111110001010000100111111010011010001000000010101100011101001111111011111001011100010111111111001111111111110011110010100110001001000110111101000111010011010111011100011110001010010001010011100001010101001000111110110001110001010000011010001011011"
+to_be_tested = "0101001110000101000111011100000110110011100000101100011000001000001000001011100001001100111010100111001111101111100100010011110000010100001110111111110010010101000111100011100110100011101011011101011000011000111100111100100011101011110011110101100110111000"
 
 # put operand 1's boundary bit length in here
-op1_len = 128
+op1_len = 256
 
 # put operand 2's boundary bit length in here
-op2_len = 128
+op2_len = 256
 
-# for multiplication: determine the bit-lenght of the output
-result_len = op1_len + op2_len
+# required for multiplication: determine the bit-lenght of the output
+result_len = 256
+
+# DEFINE THE OEPRATION HERE
+p = 115792089237316195423570985008687907853269984665640564039457584007913129639747
+if operand2_decimal != p:
+    assert("prime is different")
+#excepted_result_decimal = pow(operand1_decimal, operand2_decimal, p)
+temp = BinaryToDecimal(to_be_tested)
+expected_result_decimal = pow(temp, 2, p)
+
+
+
+
 
 
 # DO NOT TOUCH THE REST FROM HERE
@@ -47,7 +59,7 @@ op2 = "0" * temp + op2
 
 op1_array = chunks_64(op1)
 op2_array = chunks_64(op2)
-
+result_array = chunks_64(to_be_tested)
 
 print("Operand 1:")
 print(op1_array)
@@ -57,7 +69,29 @@ print("Operand 2:")
 print(op2_array)
 print("-------\n")
 
-if (BinaryToDecimal(to_be_tested) == excepted_result_decimal):
+print("Result:")
+print(result_array)
+print("-------\n")
+
+
+if (BinaryToDecimal(op1) == expected_result_decimal):
     print("SUCCESS!")
 else:
     print("FAIL!")
+    print(log2(expected_result_decimal))
+    temp = DecimalToBinary(expected_result_decimal)
+    count = 0
+    '''
+    for x in range(len(to_be_tested)):
+        if to_be_tested[x] != temp[x]:
+            print(str(count) + "th bit is different")
+        count += 1
+    '''
+
+
+
+
+
+
+
+
