@@ -166,6 +166,16 @@ public:
 
 };
 
+__host__ __device__ __forceinline__ uint128_t operator^(const uint128_t& l, const uint128_t& r)
+{
+	uint128_t z;
+
+	z.low = l.low ^ r.low;
+	z.high = l.high ^ r.high;
+
+	return z;
+}
+
 __host__ int log_2_128(const uint128_t& x)  // returns log2(x)
 {
 	int z = 0;
