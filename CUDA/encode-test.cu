@@ -64,6 +64,7 @@ int main()
 	else
 	{
 		printf("failed!\n");
+		return 1;
 	}
 
 	uint256_t piece[128], * d_piece, * d_nonce;

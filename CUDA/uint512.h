@@ -93,7 +93,7 @@ public:
 		return z;
 	}
 
-	__host__ __device__ __forceinline__ uint512_t operator=(const uint512_t& l)
+	__host__ __device__ __forceinline__ void operator=(const uint512_t& l)
 	{
 		low = l.low;
 		high = l.high;
