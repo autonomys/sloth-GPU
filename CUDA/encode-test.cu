@@ -25,11 +25,11 @@ uint256_t random_256()
 	return res;
 }
 
-void random_array_256(uint256_t a[])
+void random_array_256(uint256_t a[], unsigned iter_amount)
 {
 	std::uniform_int_distribution<unsigned long long> randnum(0, UINT64_MAX);
 
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < iter_amount; i++)
 	{
 		a[i] = random_256();
 	}
@@ -67,19 +67,20 @@ int main()
 		return 1;
 	}
 
-	uint256_t piece[128], * d_piece, * d_nonce;
-	random_array_256(piece);
-	uint256_t nonce = random_256();
+	uint256_t piece[16384], nonce[128], * d_piece, * d_nonce;
+	random_array_256(piece, 16384);
+
+	random_array_256(nonce, 128);
 	uint256_t farmer_id = random_256();
 
-	cudaMalloc(&d_piece, 4 * sizeof(unsigned long long) * 128); // TODO: pinned memory for parallelized version
-	cudaMalloc(&d_nonce, 4 * sizeof(unsigned long long));
-	cudaMemcpy(d_piece, piece, 4 * sizeof(unsigned long long) * 128, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_nonce, &nonce, 4 * sizeof(unsigned long long), cudaMemcpyHostToDevice);
+	cudaMalloc(&d_piece, 4 * sizeof(unsigned long long) * 16384); // TODO: pinned memory for parallelized version
+	cudaMalloc(&d_nonce, 4 * sizeof(unsigned long long) * 128);
+	cudaMemcpy(d_piece, piece, 4 * sizeof(unsigned long long) * 16384, cudaMemcpyHostToDevice);
+	cudaMemcpy(d_nonce, &nonce, 4 * sizeof(unsigned long long) * 128, cudaMemcpyHostToDevice);
 	
-	encode << <1, 1 >> > (d_piece, d_nonce, farmer_id);
+	encode << <1, 128 >> > (d_piece, d_nonce, farmer_id);
 
-	cudaMemcpy(piece, d_piece, 4 * sizeof(unsigned long long) * 128, cudaMemcpyDeviceToHost);
+	cudaMemcpy(piece, d_piece, 4 * sizeof(unsigned long long) * 16384, cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
 	/*for (int i = 0; i < 128; i++)
