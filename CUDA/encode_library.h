@@ -115,14 +115,14 @@ __device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 
 	if (legendre(a)) {
 		a = montgomery_exponentiation(a, expo);
-		if (isOdd(a)) {
+		if (a.isOdd()) {
 			a = p - a;
 		}
 	}
 	else {
 		a = p - a;
 		a = montgomery_exponentiation(a, expo);
-		if (isEven(a)) {
+		if (a.isEven()) {
 			a = p - a;
 		}
 	}

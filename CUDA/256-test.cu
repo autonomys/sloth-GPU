@@ -104,7 +104,7 @@ __global__ void device_bitwise_or(uint256_t* h5, uint256_t* h7, uint256_t *dres)
 
 __global__ void device_even(uint256_t* h5)
 {
-	if (isEven(*h5)) {
+	if (*h5.isEven()) {
 		printf("fail for isEven\n");
 	}
 	else {
@@ -115,7 +115,7 @@ __global__ void device_even(uint256_t* h5)
 
 __global__ void device_odd(uint256_t* h5)
 {
-	if (isOdd(*h5)) {
+	if (*h5.isOdd()) {
 		printf("success for isOdd\n");
 	}
 	else {
