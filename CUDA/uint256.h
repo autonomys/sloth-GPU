@@ -47,6 +47,14 @@ public:
 		high = 0;
 	}
 
+	__host__ __device__ __forceinline__ uint256_t(const uint64_t& hh, const uint64_t& hl, const uint64_t& lh, const uint64_t& ll)
+	{
+		high.high = hh;
+		high.low = hl;
+		low.high = lh;
+		low.low = ll;
+	}
+
 
 	__host__ __device__ __forceinline__ void operator=(const uint64_t& x)
 	{
@@ -132,6 +140,16 @@ public:
 		return z;
 	}
 };
+
+__host__ __device__ __forceinline__ uint256_t operator^(const uint256_t& l, const uint256_t& r)
+{
+	uint256_t z;
+
+	z.low = l.low ^ r.low;
+	z.high = l.high ^ r.high;
+
+	return z;
+}
 
 __host__ __device__ __forceinline__ bool operator<(const uint256_t& l, const uint256_t& r)
 {

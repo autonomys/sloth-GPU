@@ -47,6 +47,21 @@ public:
 		high = 0;
 	}
 
+	__host__ __device__ __forceinline__ uint512_t(
+		const uint64_t& hhh, const uint64_t& hhl, const uint64_t& hlh, const uint64_t& hll, 
+		const uint64_t& lhh, const uint64_t& lhl, const uint64_t& llh, const uint64_t& lll)
+	{
+		high.high.high = hhh;
+		high.high.low = hhl;
+		high.low.high = hlh;
+		high.low.low = hll;
+
+		low.high.high = lhh;
+		low.high.low = lhl;
+		low.low.high = llh;
+		low.low.low = lll;
+	}
+
 	__host__ __device__ __forceinline__ uint512_t operator>>(const unsigned& shift)
 	{
 		uint512_t z;
@@ -78,7 +93,7 @@ public:
 		return z;
 	}
 
-	__host__ __device__ __forceinline__ uint512_t operator=(const uint512_t& l)
+	__host__ __device__ __forceinline__ void operator=(const uint512_t& l)
 	{
 		low = l.low;
 		high = l.high;
