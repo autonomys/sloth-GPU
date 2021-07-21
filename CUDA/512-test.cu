@@ -19,6 +19,15 @@ __global__ void device_sub_512_256(uint512_t *d_a, uint256_t *d_d, uint512_t *d_
 	*d_res = *d_a - *d_d;
 }
 
+__global__ void device_lesser(uint512_t *d_a, uint256_t *d_b) {
+	if (*d_a < *d_b) {
+		printf("fail\n");
+	}
+	else {
+		printf("success\n");
+	}
+}
+
 __global__ void device_mul_257_256(uint512_t *d_mu, uint256_t *d_b, uint512_t *d_res) {
 	*d_res = mul257_256(*d_mu, *d_b);
 }
@@ -26,6 +35,8 @@ __global__ void device_mul_257_256(uint512_t *d_mu, uint256_t *d_b, uint512_t *d
 __global__ void device_mul_256x2(uint256_t *d_b, uint256_t *d_x, uint512_t *d_res) {
 	*d_res = mul256x2(*d_b, *d_x);
 }
+
+
 
 int main()
 {
@@ -180,6 +191,13 @@ int main()
 	cout << "`mul 256x2` test end" << endl;
 
 	cout << "/////////////////////////" << endl;
+
+
+	cout << "`<` test... ";
+	device_lesser << <1, 1 >> > (d_a, d_b);
+	
+
+
 
 	return 0;
 }

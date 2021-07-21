@@ -79,13 +79,13 @@ __global__ void device_lesser_64(uint128_t* h4, unsigned long long* a, unsigned 
 	h4 < b
 	a < h4
 	*/
-	if (*a < *h4) {
+	if (*h4 > *a) {
 		printf("Success for a < h4\n");
 	}
 	else {
 		printf("Fail for a < h4\n");
 	}
-	if (*b < *h4) {
+	if (*h4 > *b) {
 		printf("Fail for b < h4\n");
 	}
 	else {
@@ -99,13 +99,13 @@ __global__ void device_equals_64(uint128_t* h4, unsigned long long* a, unsigned 
 	h4 < b
 	a < h4
 	*/
-	if (*a == *h4) {
+	if (*h4 == *a) {
 		printf("Fail for a == h4\n");
 	}
 	else {
 		printf("Success for a == h4\n");
 	}
-	if (*b == *h4) {
+	if (*h4 == *b) {
 		printf("Success for b == h4\n");
 	}
 	else {
@@ -143,6 +143,11 @@ __global__ void device_bitwise_or(uint128_t* h5, uint128_t* h7, uint128_t *dres)
 	*dres = *h5 | *h7;
 }
 
+__global__ void device_bitwise_xor(uint128_t* h5, uint128_t* h7, uint128_t *dres)
+{
+	*dres = *h5 ^ *h7;
+}
+
 
 int main()
 {
@@ -166,10 +171,14 @@ int main()
 	cudaMalloc(&db, sizeof(unsigned long long));
 	cudaMalloc(&dres, 2 * sizeof(unsigned long long));
 
+
+	a = std::bitset<64>(std::string("0110100000010110101100100010111110011011111101011000011100111001")).to_ullong();
+	b = std::bitset<64>(std::string("0110100000010110101100100010111110011011111101011000011100111001")).to_ullong();
+
 	cout << "Multiplication test start" << endl;
 
-	a = 1289312831239555555;
-	b = 1290390120391092390;
+	//a = 1289312831239555555;
+	//b = 1290390120391092390;
 
 	cudaMemcpy(da, &a, sizeof(unsigned long long), cudaMemcpyHostToDevice);
 	cudaMemcpy(db, &b, sizeof(unsigned long long), cudaMemcpyHostToDevice);
@@ -178,7 +187,7 @@ int main()
 
 	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
 
-	cout << "Multiplication test result:\n" << bitset<64>(res.high) << endl << bitset<64>(res.low) << endl;
+	cout << "Multiplication test result:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
 
 	cout << "Multiplication test end" << endl;
 
@@ -343,6 +352,19 @@ int main()
 	cout << "Bitwise OR - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
 
 	cout << "`|` test end" << endl;
+
+
+	cout << "`^` test start" << endl;
+
+	device_bitwise_xor << <1, 1 >> > (d5, d7, dres);
+	cudaMemcpy(&res, dres, 2 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
+
+	cout << "Bitwise XOR - input1 print:\n" << bitset<64>(h5.high) << bitset<64>(h5.low) << endl;
+	cout << "Bitwise XOR - input2 print:\n" << bitset<64>(h7.high) << bitset<64>(h7.low) << endl;
+	cout << "Bitwise XOR - result print:\n" << bitset<64>(res.high) << bitset<64>(res.low) << endl;
+
+	cout << "`^` test end" << endl;
 
 	
 
