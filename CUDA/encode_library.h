@@ -135,37 +135,14 @@ __global__ void sqrt_caller(uint256_t* a)
 	*a = sqrt_permutation(*a);
 }
 
-__global__ void encode(uint256_t *a, uint256_t *nonce, uint256_t farmer_id)
+__global__ void encode_test(uint256_t *a, uint256_t expanded_i)
 {
-	uint256_t myNonce = nonce[threadIdx.x];
-	uint256_t feedback = myNonce ^ farmer_id;
-
-	uint256_t a0, a1, a2, a3;
-
+	uint256_t feedback = expanded_iv;
 
 #pragma unroll
-	for (int i = 0; i < 32; i++)  // 4 chunks are processed in each loop
+	for (int i = 0; i < 128; i++)
 	{
-		a0 = a[threadIdx.x * 128 + i * 4 + 0];
-		a1 = a[threadIdx.x * 128 + i * 4 + 1];
-		a2 = a[threadIdx.x * 128 + i * 4 + 2];
-		a3 = a[threadIdx.x * 128 + i * 4 + 3];
-
-		feedback = sqrt_permutation(a0 ^ feedback);
-		a0 = feedback;
-
-		feedback = sqrt_permutation(a1 ^ feedback);
-		a1 = feedback;
-
-		feedback = sqrt_permutation(a2 ^ feedback);
-		a2 = feedback;
-
-		feedback = sqrt_permutation(a3 ^ feedback);
-		a3 = feedback;
-
-		a[threadIdx.x * 128 + i * 4 + 0] = a0;
-		a[threadIdx.x * 128 + i * 4 + 1] = a1;
-		a[threadIdx.x * 128 + i * 4 + 2] = a2;
-		a[threadIdx.x * 128 + i * 4 + 3] = a3;
+		feedback = sqrt_permutation(a[threadIdx.x * 128 + i] ^ feedback);
+		a[threadIdx.x * 128 + i] = feedback;
 	}
 }
