@@ -102,9 +102,14 @@ __global__ void device_bitwise_or(uint256_t* h5, uint256_t* h7, uint256_t *dres)
 	*dres = *h5 | *h7;
 }
 
+__global__ void device_bitwise_xor(uint256_t* h5, uint256_t* h7, uint256_t *dres)
+{
+	*dres = *h5 ^ *h7;
+}
+
 __global__ void device_even(uint256_t* h5)
 {
-	if (isEven(*h5)) {
+	if ((*h5).isEven()) {
 		printf("fail for isEven\n");
 	}
 	else {
@@ -115,7 +120,7 @@ __global__ void device_even(uint256_t* h5)
 
 __global__ void device_odd(uint256_t* h5)
 {
-	if (isOdd(*h5)) {
+	if ((*h5).isOdd()) {
 		printf("success for isOdd\n");
 	}
 	else {
@@ -323,6 +328,20 @@ int main()
 
 	cout << "/////////////////////////" << endl;
 
+	cout << "`^` test start" << endl;
+
+	device_bitwise_xor << <1, 1 >> > (d5, d7, dres);
+	cudaMemcpy(&res, dres, 4 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
+	cudaDeviceSynchronize();
+
+	cout << "Bitwise XOR - input1 print:\n" << bitset<64>(h5.high.high) << bitset<64>(h5.high.low) << bitset<64>(h5.low.high) << bitset<64>(h5.low.low) << endl;
+	cout << "Bitwise XOR - input2 print:\n" << bitset<64>(h7.high.high) << bitset<64>(h7.high.low) << bitset<64>(h7.low.high) << bitset<64>(h7.low.low) << endl;
+	cout << "Bitwise XOR - result print:\n" << bitset<64>(res.high.high) << bitset<64>(res.high.low) << bitset<64>(res.low.high) << bitset<64>(res.low.low) << endl;
+
+	cout << "`^` test end" << endl;
+
+	cout << "/////////////////////////" << endl;
+
 	cout << "`isEven` test start" << endl;
 
 	device_even << <1, 1 >> > (d5);
@@ -339,7 +358,6 @@ int main()
 
 	cout << "`isOdd` test end" << endl;
 
-	cout << "/////////////////////////" << endl;
 
 	cout << "Multiplication test 2 start" << endl;
 
@@ -361,8 +379,6 @@ int main()
 	cout << "Multiplication test result:\n" << bitset<64>(res.high.high) << bitset<64>(res.high.low) << bitset<64>(res.low.high) << bitset<64>(res.low.low) << endl;
 
 	cout << "Multiplication test 2 end" << endl;
-
-
 
 	return 0;
 }

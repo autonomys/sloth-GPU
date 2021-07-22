@@ -77,7 +77,7 @@ public:
 	}
 
 
-	__host__ __device__ __forceinline__ uint256_t operator<<(const unsigned& shift)
+	__host__ __device__ __forceinline__ uint256_t operator<<(const unsigned& shift) const
 	{
 		uint256_t z;
 
@@ -87,7 +87,7 @@ public:
 		}
 		else if (shift > 128)
 		{
-			z.high = low >> (shift - 128);
+			z.high = low << (shift - 128);
 		}
 		else if (shift == 0)
 		{
@@ -96,8 +96,8 @@ public:
 		}
 		else if (shift < 128)
 		{
-			z.high = high << shift; 
-			z.high = (low >> (128 - shift)) | z.high;  
+			z.high = high << shift;
+			z.high = (low >> (128 - shift)) | z.high;
 			z.low = low << shift;
 		}
 		else  // shift == 128
@@ -109,7 +109,7 @@ public:
 	}
 
 
-	__host__ __device__ __forceinline__ uint256_t operator>>(const unsigned& shift)
+	__host__ __device__ __forceinline__ uint256_t operator>>(const unsigned& shift) const
 	{
 		uint256_t z;
 
@@ -139,109 +139,111 @@ public:
 
 		return z;
 	}
+
+	__host__ __device__ __forceinline__ uint256_t operator^(const uint256_t& r) const
+	{
+		uint256_t z;
+
+		z.low = low ^ r.low;
+		z.high = high ^ r.high;
+
+		return z;
+	}
+
+	
+
+	__host__ __device__ __forceinline__ uint256_t operator|(const uint256_t& r) const
+	{
+		uint256_t z;
+
+		z.low = low | r.low;
+		z.high = high | r.high;
+
+		return z;
+	}
+
+	__host__ __device__ __forceinline__ uint256_t operator-(const uint256_t& r) const
+	{
+		uint256_t z;
+
+		z.low = low - r.low;
+		z.high = high - r.high - (low < r.low);
+
+		return z;
+	}
+
+	__host__ __device__ __forceinline__ uint256_t operator-(const uint64_t& r) const
+	{
+		uint256_t z;
+
+		z.low = low - r;
+		z.high = high - (low < r);
+
+		return z;
+	}
+
+	__host__ __device__ __forceinline__ uint256_t operator+(const uint256_t& r) const
+	{
+		uint256_t z;
+
+		z.low = low + r.low;
+
+		z.high = high + r.high + (z.low < low);
+
+		return z;
+	}
+
+	__host__ __device__ __forceinline__ bool operator<(const uint256_t& r) const
+	{
+		if (high < r.high)
+			return true;
+		else if (high > r.high)
+			return false;
+		else if (low < r.low)
+			return true;
+		else
+			return false;
+	}
+
+	__host__ __device__ __forceinline__ bool operator>(const uint256_t& r) const
+	{
+		if (high > r.high)
+			return true;
+		else if (high < r.high)
+			return false;
+		else if (low > r.low)
+			return true;
+		else
+			return false;
+	}
+
+	__host__ __device__ __forceinline__ bool operator==(const uint256_t& r) const
+	{
+		if ((low == r.low) && (high == r.high))  // both parts need to be equal to each other
+			return true;
+		else
+			return false;
+	}
+
+	__host__ __device__ __forceinline__ bool isEven() const
+	{
+		if (low.low & 1) {
+			return false;
+		}
+		return true;
+	}
+
+	__host__ __device__ __forceinline__ bool isOdd() const
+	{
+		if (low.low & 1) {
+			return true;
+		}
+		return false;
+	}
 };
 
-__host__ __device__ __forceinline__ uint256_t operator^(const uint256_t& l, const uint256_t& r)
-{
-	uint256_t z;
 
-	z.low = l.low ^ r.low;
-	z.high = l.high ^ r.high;
-
-	return z;
-}
-
-__host__ __device__ __forceinline__ bool operator<(const uint256_t& l, const uint256_t& r)
-{
-	if (l.high < r.high)
-		return true;
-	else if (l.high > r.high)
-		return false;
-	else if (l.low < r.low)
-		return true;
-	else
-		return false;
-}
-
-__host__ __device__ __forceinline__ bool operator>(const uint256_t& l, const uint256_t& r)
-{
-	if (l.high > r.high)
-		return true;
-	else if (l.high < r.high)
-		return false;
-	else if (l.low > r.low)
-		return true;
-	else
-		return false;
-}
-
-__host__ __device__ __forceinline__ bool operator==(const uint256_t& l, const uint256_t& r)
-{
-	if ((l.low == r.low) && (l.high == r.high))  // both parts need to be equal to each other
-		return true;
-	else
-		return false;
-}
-
-__host__ __device__ __forceinline__ uint256_t operator|(const uint256_t& x, const uint256_t& y)
-{
-	uint256_t z;
-
-	z.low = x.low | y.low;
-	z.high = x.high | y.high;
-
-	return z;
-}
-
-__host__ __device__ __forceinline__ uint256_t operator-(const uint256_t& x, const uint256_t& y)
-{
-	uint256_t z;
-
-	z.low = x.low - y.low;
-	z.high = x.high - y.high - (x.low < y.low);
-
-	return z;
-}
-
-__host__ __device__ __forceinline__ uint256_t operator-(const uint256_t& x, const uint64_t& y)
-{
-	uint256_t z;
-
-	z.low = x.low - y;
-	z.high = x.high - (x.low < y);
-
-	return z;
-}
-
-__host__ __device__ __forceinline__ uint256_t operator+(const uint256_t& x, const uint256_t& y)
-{
-	uint256_t z;
-
-	z.low = x.low + y.low;
-
-	z.high = x.high + y.high + (z.low < x.low);
-
-	return z;
-}
-
-__host__ __device__ __forceinline__ bool isEven(const uint256_t& x)
-{
-	if (x.low.low & 1) {
-		return false;
-	}
-	return true;
-}
-
-__host__ __device__ __forceinline__ bool isOdd(const uint256_t& x)
-{
-	if (x.low.low & 1) {
-		return true;
-	}
-	return false;
-}
-
-
-/* ZA WARUDOOOOOOOO */
+/* WRYYYYYYYYYYYYYYYYYYYYYYYYYYYY */
 __device__ __forceinline__ uint256_t mul128x2(const uint128_t& a, const uint128_t& b)
 {  // uses KARATSUBA multiplication
 	/*

@@ -115,14 +115,14 @@ __device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 
 	if (legendre(a)) {
 		a = montgomery_exponentiation(a, expo);
-		if (isOdd(a)) {
+		if (a.isOdd()) {
 			a = p - a;
 		}
 	}
 	else {
 		a = p - a;
 		a = montgomery_exponentiation(a, expo);
-		if (isEven(a)) {
+		if (a.isEven()) {
 			a = p - a;
 		}
 	}
@@ -135,14 +135,14 @@ __global__ void sqrt_caller(uint256_t* a)
 	*a = sqrt_permutation(*a);
 }
 
-__global__ void encode(uint256_t *a, uint256_t *nonce, uint256_t farmer_id)
+__global__ void encode_test(uint256_t *a, uint256_t expanded_i)
 {
-	uint256_t feedback = *nonce ^ farmer_id;
+	uint256_t feedback = expanded_iv;
 
 #pragma unroll
 	for (int i = 0; i < 128; i++)
 	{
-		feedback = sqrt_permutation(a[i] ^ feedback);
-		a[i] = feedback;
+		feedback = sqrt_permutation(a[threadIdx.x * 128 + i] ^ feedback);
+		a[threadIdx.x * 128 + i] = feedback;
 	}
 }

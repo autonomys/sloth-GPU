@@ -62,7 +62,13 @@ public:
 		low.low.low = lll;
 	}
 
-	__host__ __device__ __forceinline__ uint512_t operator>>(const unsigned& shift)
+	__host__ __device__ __forceinline__ void operator=(const uint512_t& l)
+	{
+		low = l.low;
+		high = l.high;
+	}
+	
+	__host__ __device__ __forceinline__ uint512_t operator>>(const unsigned& shift) const
 	{
 		uint512_t z;
 
@@ -93,34 +99,48 @@ public:
 		return z;
 	}
 
-	__host__ __device__ __forceinline__ void operator=(const uint512_t& l)
+	__host__ __device__ __forceinline__ uint512_t operator-(const uint512_t& r) const
 	{
-		low = l.low;
-		high = l.high;
+		uint512_t z;
+
+		z.low = low - r.low;
+		z.high = high - r.high - (low < r.low);
+
+		return z;
 	}
+
+	__host__ __device__ __forceinline__ uint512_t operator-(const uint256_t& r) const
+	{
+		uint512_t z;
+
+		z.low = low - r;
+		z.high = high - (low < r);
+
+		return z;
+	}
+
+	__host__ __device__ __forceinline__ bool operator<(const uint256_t& r) const
+{
+	if ((high.high.high ^ 0) | (high.high.low ^ 0) | (high.low.high ^ 0) | (high.low.low ^ 0))
+	{  // means high bits of x is not completely 0, so it's bigger than y
+		return false;
+	}
+	else  // means high bits of x is completely 0, so we have to investigate further
+	{
+		if (low < r) 
+		{
+			return true;
+		}
+		else 
+		{
+			return false;
+		}
+	}
+}
 };
 
-__host__ __device__ __forceinline__ uint512_t operator-(const uint512_t& x, const uint512_t& y)
-{
-	uint512_t z;
 
-	z.low = x.low - y.low;
-	z.high = x.high - y.high - (x.low < y.low);
-
-	return z;
-}
-
-__host__ __device__ __forceinline__ uint512_t operator-(const uint512_t& x, const uint256_t& y)
-{
-	uint512_t z;
-
-	z.low = x.low - y;
-	z.high = x.high - (x.low < y);
-
-	return z;
-}
-
-/* WRYYYYYYYYYYYYYYYYYYYYYYYYYYYY */
+/* MUDA MUDA MUDA MUDA */
 __device__ __forceinline__ uint512_t mul256x2(const uint256_t& a, const uint256_t& b)
 {
 	uint512_t c;
@@ -144,6 +164,7 @@ __device__ __forceinline__ uint512_t mul256x2(const uint256_t& a, const uint256_
 	return c;
 }
 
+/* MUDA MUDA MUDA MUDA MUDA MUDA MUDA MUDA */
 __device__ __forceinline__ uint512_t mul257_256(const uint512_t& a, const uint256_t& b)
 {
 	uint512_t c;  // inside this, we are only storing a 257 bit number (we are not utilizing all 512 bits here)
@@ -158,23 +179,4 @@ __device__ __forceinline__ uint512_t mul257_256(const uint512_t& a, const uint25
 		// which is effectively adding b to the high bits of the c
 
 	return c;
-}
-
-__host__ __device__ __forceinline__ bool operator<(const uint512_t& x, const uint256_t& y)
-{
-	if ((x.high.high.high ^ 0) | (x.high.high.low ^ 0) | (x.high.low.high ^ 0) | (x.high.low.low ^ 0))
-	{  // means high bits of x is not completely 0, so it's bigger than y
-		return false;
-	}
-	else  // means high bits of x is completely 0, so we have to investigate further
-	{
-		if (x.low < y) 
-		{
-			return true;
-		}
-		else 
-		{
-			return false;
-		}
-	}
 }
