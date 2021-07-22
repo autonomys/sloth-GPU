@@ -48,7 +48,7 @@ public:
 	__host__ __device__ __forceinline__ uint128_t(const uint64_t& x)  // when initialized from a 64-bit integer
 	{
 		low = x;   // we only replace the low bits with the given 64-bit number
-		high = 0;  // and initialize the high bits as 0 
+		high = 0;  // and initialize the high bits as 0
 	}
 
 	__host__ __device__ __forceinline__ void operator=(const uint128_t& r)  // copy 128-bit into another 128-bit
@@ -60,7 +60,7 @@ public:
 	__host__ __device__ __forceinline__ void operator=(const uint64_t& r)  // copy 64-bit into a 128-bit
 	{
 		low = r;   // we only replace the low bits with the given 64-bit number
-		high = 0;  // and initialize the high bits as 0 
+		high = 0;  // and initialize the high bits as 0
 	}
 
 	__host__ __device__ __forceinline__ uint128_t operator<<(const unsigned& shift) const  // left shift operation
@@ -133,7 +133,7 @@ public:
 		return z;
 	}
 
-	__host__ __device__ __forceinline__ uint128_t operator>>(const unsigned& shift) const  // right shift 
+	__host__ __device__ __forceinline__ uint128_t operator>>(const unsigned& shift) const  // right shift
 	{  // look at the above comments for left shift, it's the same logic
 		uint128_t z;
 
@@ -352,7 +352,7 @@ __device__ __forceinline__ uint128_t mul64x2(const unsigned long long& a, const 
 						|   ________ operand registers
 						|   |   |
 						V   V   V                                            */
-		"mul.lo.u32      %3, %5, %7;    \n\t"  // %3 = low bits of (a.low * b.low) 
+		"mul.lo.u32      %3, %5, %7;    \n\t"  // %3 = low bits of (a.low * b.low)
 		"mul.hi.u32      %2, %5, %7;    \n\t"  // %2 = high bits of (a.low * b.low)
 		"mad.lo.cc.u32   %2, %4, %7, %2;\n\t"  // %2 = low bits of  (a.high * b.low) + %2 -> if carry occurs, flag it
 		"madc.hi.u32     %1, %4, %7,  0;\n\t"  // %1 = high bits of (a.high * b.low) + 0  -> if carry flag is set, handle it

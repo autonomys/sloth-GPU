@@ -1,4 +1,4 @@
-// C++ IMPORTS 
+// C++ IMPORTS
 #include <iostream>
 #include <bitset>
 #include <random>
@@ -10,6 +10,8 @@ using namespace std;
 
 std::random_device dev;
 std::mt19937_64 rng(dev());
+
+#define num_piece 1024 * 32
 
 uint256_t random_256()
 {

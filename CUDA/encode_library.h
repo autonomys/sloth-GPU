@@ -22,8 +22,8 @@ __device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256
 	uint256_t t1h = (t1 >> k).low;
 	uint512_t t2 = mul256x2(t1h, p);
 	uint512_t cbar = t - t2;
-	
-	
+
+
 	if (cbar < p) {  // if cbar does not require reduction
 		return cbar.low;
 	}
@@ -78,12 +78,12 @@ __device__ __forceinline__ uint256_t montgomery_exponentiation(uint256_t a, uint
 	return c0;
 }
 
-__global__ void montgomery_caller(uint256_t *a) 
+__global__ void montgomery_caller(uint256_t *a)
 {
 	EXP;
 
 	*a = montgomery_exponentiation(*a, expo);
-	
+
 }
 
 __device__ __forceinline__ bool legendre(uint256_t a)
@@ -97,7 +97,7 @@ __device__ __forceinline__ bool legendre(uint256_t a)
 	}
 }
 
-__global__ void legendre_caller(uint256_t *a) 
+__global__ void legendre_caller(uint256_t *a)
 {
 	bool result = legendre(*a);
     if (result) {
