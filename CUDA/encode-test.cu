@@ -11,6 +11,8 @@ using namespace std;
 std::random_device dev;
 std::mt19937_64 rng(dev());
 
+#define num_piece 1024 * 32
+
 uint256_t random_256()
 {
 	uint256_t res;
@@ -25,11 +27,11 @@ uint256_t random_256()
 	return res;
 }
 
-void random_array_256(uint256_t a[], unsigned iter_amount)
+void random_array_256(uint256_t a[], unsigned n)
 {
 	std::uniform_int_distribution<unsigned long long> randnum(0, UINT64_MAX);
 
-	for (int i = 0; i < iter_amount; i++)
+	for (int i = 0; i < n; i++)
 	{
 		a[i] = random_256();
 	}
@@ -37,56 +39,55 @@ void random_array_256(uint256_t a[], unsigned iter_amount)
 
 int main()
 {
-	uint256_t a, *d_a;
 
-	a.high.high = std::bitset<64>(std::string("1111111111111111111111111111111111111111111111111111111111111111")).to_ullong();
-	a.high.low = std::bitset<64>(std::string("1111111111111111111111111111111111111111111111111111111111111111")).to_ullong();
-	a.low.high = std::bitset<64>(std::string("1111111111111111111111111111111111111111111111111111111111111111")).to_ullong();
-	a.low.low = std::bitset<64>(std::string("1111111111111111111111111111111111111111111111111111111100111100")).to_ullong();
+	uint256_t* piece, * d_piece, * d_nonce;
+	cudaMallocHost(&piece, 4 * sizeof(unsigned long long) * 128);
 
-	cudaMalloc(&d_a, 4 * (sizeof(unsigned long long)));
-	cudaMemcpy(d_a, &a, 4 * (sizeof(unsigned long long)), cudaMemcpyHostToDevice);
-
-	//cout << "a: " << bitset<64>(a.high.high) << bitset<64>(a.high.low) << bitset<64>(a.low.high) << bitset<64>(a.low.low) << endl;
-
-	cout << "Square-root permutation test ...";
-	sqrt_caller << <1, 1 >> > (d_a);
-	cudaMemcpy(&a, d_a, 4 * sizeof(unsigned long long), cudaMemcpyDeviceToHost);
-	cudaDeviceSynchronize();
-	if (bitset<64>(a.high.high) == std::bitset<64>(std::string("0101001110000101000111011100000110110011100000101100011000001000")) &&
-		bitset<64>(a.high.low) == std::bitset<64>(std::string("0010000010111000010011001110101001110011111011111001000100111100")) &&
-		bitset<64>(a.low.high) == std::bitset<64>(std::string("0001010000111011111111001001010100011110001110011010001110101101")) &&
-		bitset<64>(a.low.low) == std::bitset<64>(std::string("1101011000011000111100111100100011101011110011110101100110111000"))
-		) {
-
-		printf("passed!\n");
-	}
-	else
+	unsigned char* byte_piece = (unsigned char*)piece;
+	for (int i = 0; i < 32 * 128; i++)
 	{
-		printf("failed!\n");
-		return 1;
+		byte_piece[i] = 5u;
 	}
 
-	uint256_t piece[16384], nonce[128], * d_piece, * d_nonce;
-	random_array_256(piece, 16384);
+	uint256_t expanded_iv;
 
-	random_array_256(nonce, 128);
-	uint256_t farmer_id = random_256();
+	unsigned char* byte_expanded_iv = (unsigned char*)&expanded_iv;
+	for (int i = 0; i < 32; i++)
+	{
+		byte_expanded_iv[i] = 3u;
+	}
 
-	cudaMalloc(&d_piece, 4 * sizeof(unsigned long long) * 16384); // TODO: pinned memory for parallelized version
-	cudaMalloc(&d_nonce, 4 * sizeof(unsigned long long) * 128);
-	cudaMemcpy(d_piece, piece, 4 * sizeof(unsigned long long) * 16384, cudaMemcpyHostToDevice);
-	cudaMemcpy(d_nonce, &nonce, 4 * sizeof(unsigned long long) * 128, cudaMemcpyHostToDevice);
-	
-	encode << <1, 128 >> > (d_piece, d_nonce, farmer_id);
+	cudaMalloc(&d_piece, 4 * sizeof(unsigned long long) * 128);
+	cudaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128, cudaMemcpyHostToDevice, 0);
 
-	cudaMemcpy(piece, d_piece, 4 * sizeof(unsigned long long) * 16384, cudaMemcpyDeviceToHost);
+	encode_test << <1, 1 >> > (d_piece, expanded_iv);
+
+	cudaMemcpyAsync(piece, d_piece, 4 * sizeof(unsigned long long) * 128, cudaMemcpyDeviceToHost, 0);
 	cudaDeviceSynchronize();
 
-	/*for (int i = 0; i < 128; i++)
+
+	unsigned char* piece_byte_ptr = (unsigned char*)piece;
+	for (int i = 0; i < 128 * 32; i++)
 	{
-		cout << bitset<64>(piece[i].high.high) << bitset<64>(piece[i].high.low) << bitset<64>(piece[i].low.high) << bitset<64>(piece[i].low.low) << endl;
-	}*/
+		unsigned number = (unsigned)piece_byte_ptr[i];
+
+		if (number == 0)
+		{
+			cout << "00";
+		}
+		else if (number < 16)
+		{
+			cout << "0";
+			cout << hex << number;
+		}
+		else
+		{
+			cout << hex << number;
+		}
+
+		if (i % 32 == 31)
+			cout << endl;
+	}
 
 	return 0;
 }

@@ -74,10 +74,11 @@ public:
 		}
 		else if (shift > 64)  // if 128 > shift > 64
 		{
-			// high bits will be discarded, and some of the low bits will be transferred to high bits
 			// no low bits, will stay in the low part, so low bits will be 0
 			// z.low = 0  // is same as not writing this
-			z.high = low >> (shift - 64);
+			// high bits will be discarded, and some of the low bits will be transferred to high bits:
+			// say, if shift is 65, the most significant first bit of low will be completely discarded
+			z.high = low << (shift - 64);
 		}
 		else if (shift == 0)  // ?
 		{
@@ -143,6 +144,10 @@ public:
 		}
 		else if (shift > 64)
 		{
+			// no high bits, will stay in the high part, so high bits will be 0
+			// z.high = 0  // is same as not writing this
+			// low bits will be discarded, and some of the high bits will be transferred to low bits:
+			// say, if shift is 65, the least significant first bit of high will be completely discarded
 			z.low = high >> (shift - 64);
 		}
 		else if (shift == 0)
