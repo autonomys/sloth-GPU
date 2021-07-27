@@ -160,7 +160,7 @@ __global__ void encode_coalesced(uint256_t *a, uint256_t *nonce, uint256_t farme
 	for (int i = 0; i < 128; i++)
 	{
 		feedback = sqrt_permutation(a[global_tid + piece_count * i] ^ feedback);
-		a[global_tid * 128 + i] = feedback;
+		a[global_tid + piece_count * i] = feedback;
 	}
 }
 
