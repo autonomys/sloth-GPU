@@ -137,12 +137,65 @@ __global__ void sqrt_caller(uint256_t* a)
 
 __global__ void encode(uint256_t *a, uint256_t *nonce, uint256_t farmer_id)
 {
-	uint256_t feedback = *nonce ^ farmer_id;
+	unsigned global_tid = blockIdx.x + blockDim.x * 128;  // 128 thread per block
+	uint256_t myNonce = nonce[global_tid];
+	uint256_t feedback = myNonce ^ farmer_id;
 
 #pragma unroll
 	for (int i = 0; i < 128; i++)
 	{
-		feedback = sqrt_permutation(a[i] ^ feedback);
-		a[i] = feedback;
+		feedback = sqrt_permutation(a[global_tid * 128 + i] ^ feedback);
+		a[global_tid * 128 + i] = feedback;
+	}
+}
+
+
+__global__ void encode_coalesced(uint256_t *a, uint256_t *nonce, uint256_t farmer_id, unsigned long long piece_count)
+{
+	unsigned global_tid = blockIdx.x + blockDim.x * 128;  // 128 thread per block
+	uint256_t myNonce = nonce[global_tid];
+	uint256_t feedback = myNonce ^ farmer_id;
+
+#pragma unroll
+	for (int i = 0; i < 128; i++)
+	{
+		feedback = sqrt_permutation(a[global_tid + piece_count * i] ^ feedback);
+		a[global_tid * 128 + i] = feedback;
+	}
+}
+
+
+__global__ void encode_v2(uint256_t *a, uint256_t *nonce, uint256_t farmer_id)
+{
+	uint256_t myNonce = nonce[threadIdx.x];
+	uint256_t feedback = myNonce ^ farmer_id;
+
+	uint256_t a0, a1, a2, a3;
+
+
+#pragma unroll
+	for (int i = 0; i < 32; i++)  // 4 chunks are processed in each loop
+	{
+		a0 = a[threadIdx.x * 128 + i * 4 + 0];
+		a1 = a[threadIdx.x * 128 + i * 4 + 1];
+		a2 = a[threadIdx.x * 128 + i * 4 + 2];
+		a3 = a[threadIdx.x * 128 + i * 4 + 3];
+
+		feedback = sqrt_permutation(a0 ^ feedback);
+		a0 = feedback;
+
+		feedback = sqrt_permutation(a1 ^ feedback);
+		a1 = feedback;
+
+		feedback = sqrt_permutation(a2 ^ feedback);
+		a2 = feedback;
+
+		feedback = sqrt_permutation(a3 ^ feedback);
+		a3 = feedback;
+
+		a[threadIdx.x * 128 + i * 4 + 0] = a0;
+		a[threadIdx.x * 128 + i * 4 + 1] = a1;
+		a[threadIdx.x * 128 + i * 4 + 2] = a2;
+		a[threadIdx.x * 128 + i * 4 + 3] = a3;
 	}
 }
