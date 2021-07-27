@@ -1,11 +1,8 @@
 // safe include
 #pragma once
-
 // CUSTOM IMPORTS
 #include "uint512.h"
-
 using namespace std;
-
 #define PRIME uint256_t p(18446744073709551615, 18446744073709551615, 18446744073709551615, 18446744073709551427)
 #define MU uint512_t mu(0, 0, 0, 1, 0, 0, 0, 189)
 #define EXP uint256_t expo(4611686018427387903, 18446744073709551615, 18446744073709551615, 18446744073709551569)
@@ -15,7 +12,6 @@ __device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256
 {
 	PRIME;
 	MU;
-
 	/*uint512_t t = mul256x2(x, y);
 	uint256_t th = (t >> k).low; //since k is 256 we know that high 256 bits will be zero
 	uint512_t t1 = mul257_256(mu, th);
@@ -83,7 +79,6 @@ __global__ void montgomery_caller(uint256_t *a)
 	EXP;
 
 	*a = montgomery_exponentiation(*a, expo);
-
 }
 
 __device__ __forceinline__ bool legendre(uint256_t a)
@@ -126,7 +121,6 @@ __device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 			a = p - a;
 		}
 	}
-
 	return a;
 }
 

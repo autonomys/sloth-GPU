@@ -5,6 +5,7 @@
 
 // CUSTOM IMPORTS
 #include "encode_library.h"
+#include "shared_encode_library.h"
 
 using namespace std;
 
@@ -40,10 +41,9 @@ void random_array_256(uint256_t a[], unsigned iter_amount)
 
 int main()
 {
-	uint256_t* piece, *d_piece, *d_nonce;
+	uint256_t* piece, * d_piece, * d_nonce;
 	cudaMallocHost(&piece, 4 * sizeof(unsigned long long) * 128 * num_piece);
 	random_array_256(piece, 128 * num_piece);
-
 
 	uint256_t* nonce;
 	cudaMallocHost(&nonce, 4 * sizeof(unsigned long long) * num_piece);
@@ -58,25 +58,29 @@ int main()
 
 	encode << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id);
 
+	cudaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
+
+	empty_encode << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id);
+
+	cudaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
+
+	encode_coalesced << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id, num_piece);
+
+	cudaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
+
+	empty_encode_coalesced << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id, num_piece);
+
+	udaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
+
+	shared_encode << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id, num_piece);
+
+	udaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
+
+	shared_encode_coalesced << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id, num_piece);
+
 	cudaMemcpy(piece, d_piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();
 
-	/* FOR DEBUG
-	for (int i = 0; i < 128; i++)
-	{
-		cout << std::bitset<64>(piece[i].high.high) << endl << std::bitset<64>(piece[i].high.low) << endl <<
-			std::bitset<64>(piece[i].low.high) << endl << std::bitset<64>(piece[i].low.low) << endl;
-	}
-
-	cout << endl << endl;
-
-	for (int i = 0; i < 128; i++)
-	{
-		cout << hex << piece[i].high.high << endl << hex << piece[i].high.low << endl <<
-			hex << piece[i].low.high << endl << hex << piece[i].low.low << endl;
-	}
-	*/
-	
 
 	return 0;
 }
