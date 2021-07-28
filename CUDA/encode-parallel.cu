@@ -5,6 +5,7 @@
 
 // CUSTOM IMPORTS
 #include "encode_library.h"
+#include "shared_encode_library.h"
 
 using namespace std;
 
@@ -68,6 +69,14 @@ int main()
 	cudaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
 
 	empty_encode_coalesced << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id, num_piece);
+
+	udaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
+
+	shared_encode << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id, num_piece);
+
+	udaMemcpyAsync(d_piece, piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyHostToDevice, 0);
+
+	shared_encode_coalesced << <num_piece / num_threads, num_threads >> > (d_piece, d_nonce, farmer_id, num_piece);
 
 	cudaMemcpy(piece, d_piece, 4 * sizeof(unsigned long long) * 128 * num_piece, cudaMemcpyDeviceToHost);
 	cudaDeviceSynchronize();

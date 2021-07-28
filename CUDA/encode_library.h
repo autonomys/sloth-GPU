@@ -1,23 +1,17 @@
 // safe include
 #pragma once
-
 // CUSTOM IMPORTS
 #include "uint512.h"
-
 using namespace std;
-
 #define PRIME uint256_t p(18446744073709551615, 18446744073709551615, 18446744073709551615, 18446744073709551427)
 #define MU uint512_t mu(0, 0, 0, 1, 0, 0, 0, 189)
 #define EXP uint256_t expo(4611686018427387903, 18446744073709551615, 18446744073709551615, 18446744073709551569)
 #define k 256
 
-#define num_threads 128
-
-__device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256_t y, uint256_t s256[], uint512_t s512[])
+__device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256_t y)
 {
 	PRIME;
 	MU;
-
 	/*uint512_t t = mul256x2(x, y);
 	uint256_t th = (t >> k).low; //since k is 256 we know that high 256 bits will be zero
 	uint512_t t1 = mul257_256(mu, th);
@@ -39,65 +33,67 @@ __device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256
 		uint512_t t4 = cbar - p - p;
 		return t4.low;
 	}*/
-	s512[0] = mul256x2(x, y);
-	s256[2] = (s512[0] >> k).low; //since k is 256 we know that high 256 bits will be zero
-	s512[1] = mul257_256(mu, s256[2]);
-	s256[4] = (s512[0] >> k).low;
-	s512[2] = mul256x2(s256[4], p);
-	s512[3] = s512[0] - s512[2];
-	s512[4] = s512[3] - p;
-	s512[5] = s512[3] - p - p;
+	uint512_t t = mul256x2(x, y);
+	uint256_t th = (t >> k).low; //since k is 256 we know that high 256 bits will be zero
+	uint512_t t1 = mul257_256(mu, th);
+	uint256_t t1h = (t1 >> k).low;
+	uint512_t t2 = mul256x2(t1h, p);
+	uint512_t cbar = t - t2;
+	uint512_t t3 = cbar - p;
+	uint512_t t4 = cbar - p - p;
 
-	if (s512[5] < p)
-		return s512[5].low;
-	else if (s512[4] < p)
-		return s512[4].low;
+	if (t4 < p)
+		return t4.low;
+	else if (t3 < p)
+		return t3.low;
 	else
-		return s512[3].low;
+		return cbar.low;
 }
 
-__device__ __forceinline__ uint256_t montgomery_exponentiation(uint256_t a, uint256_t expo, uint256_t s256[], uint512_t s512[])
+__device__ __forceinline__ uint256_t montgomery_exponentiation(uint256_t a, uint256_t expo)
 {
 
-	s256[0].low.low = 1ull;
-	s256[1] = a;
+	uint256_t c0; c0.low.low = 1ull;
+	uint256_t c1 = a;
 
 	for (int i = k - 1; i >= 0; i--)
 	{
 
 		if (!((expo >> i).low.low & 1)) //returns true if number is even
 		{
-			s256[1] = modular_multiplication(s256[0], s256[1], s256, s512);
-			s256[0] = modular_multiplication(s256[0], s256[0], s256, s512);
+			c1 = modular_multiplication(c0, c1);
+			c0 = modular_multiplication(c0, c0);
 		}
 		else
 		{
-			s256[0] = modular_multiplication(s256[0], s256[1], s256, s512);
-			s256[1] = modular_multiplication(s256[1], s256[1], s256, s512);
+			c0 = modular_multiplication(c0, c1);
+			c1 = modular_multiplication(c1, c1);
 		}
 	}
 
-	return s256[0];
+	return c0;
 }
 
-/*__global__ void montgomery_caller(uint256_t *a, uint256_t expo) 
+__global__ void montgomery_caller(uint256_t *a) 
 {
+	EXP;
+
 	*a = montgomery_exponentiation(*a, expo);
 	
-}*/
+}
 
-__device__ __forceinline__ bool legendre(uint256_t a, uint256_t s256[], uint512_t s512[])
+__device__ __forceinline__ bool legendre(uint256_t a)
 {
 	PRIME;
 
-	if (montgomery_exponentiation(a, (p - 1) >> 1, s256, s512) == (p - 1))
+	if (montgomery_exponentiation(a, (p - 1) >> 1) == (p - 1))
 		return false;
 	else {
 		return true;
 	}
 }
 
-/*__global__ void legendre_caller(uint256_t *a) 
+__global__ void legendre_caller(uint256_t *a) 
 {
 	bool result = legendre(*a);
     if (result) {
@@ -106,50 +102,58 @@ __device__ __forceinline__ bool legendre(uint256_t a, uint256_t s256[], uint512_
     else {
         printf("failed");
     }
-}*/
+}
 
-__device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a, uint256_t s256[], uint512_t s512[]) {
+__device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 
 	PRIME;
 	EXP;
 
-	if (legendre(a, s256, s512)) {
-		a = montgomery_exponentiation(a, expo, s256, s512);
+	if (legendre(a)) {
+		a = montgomery_exponentiation(a, expo);
 		if (a.isOdd()) {
 			a = p - a;
 		}
-
 	}
 	else {
-		uint256_t zero;
 		a = p - a;
-		a = montgomery_exponentiation(a, expo, s256, s512);
+		a = montgomery_exponentiation(a, expo);
 		if (a.isEven()) {
 			a = p - a;
 		}
 	}
-
 	return a;
 }
 
-/*__global__ void sqrt_caller(uint256_t* a)
+__global__ void sqrt_caller(uint256_t* a)
 {
 	*a = sqrt_permutation(*a);
-}*/
+}
 
-__global__ void encode(uint256_t* a, uint256_t* nonce, uint256_t farmer_id)
+__global__ void encode(uint256_t *a, uint256_t *nonce, uint256_t farmer_id)
 {
-	__shared__ uint256_t s256[4];
-	__shared__ uint512_t s512[6];
-
-	unsigned global_tid = threadIdx.x + blockIdx.x * 128;  // 128 thread per block
+	unsigned global_tid = blockIdx.x + blockDim.x * 128;  // 128 thread per block
 	uint256_t feedback = nonce[global_tid] ^ farmer_id;
 
 #pragma unroll
 	for (int i = 0; i < 128; i++)
 	{
-		feedback = sqrt_permutation(a[global_tid * 128 + i] ^ feedback, s256, s512);
+		feedback = sqrt_permutation(a[global_tid * 128 + i] ^ feedback);
 		a[global_tid * 128 + i] = feedback;
+	}
+}
+
+
+__global__ void encode_coalesced(uint256_t *a, uint256_t *nonce, uint256_t farmer_id, unsigned long long piece_count)
+{
+	unsigned global_tid = blockIdx.x + blockDim.x * 128;  // 128 thread per block
+	uint256_t feedback = nonce[global_tid] ^ farmer_id;
+
+#pragma unroll
+	for (int i = 0; i < 128; i++)
+	{
+		feedback = sqrt_permutation(a[global_tid + piece_count * i] ^ feedback);
+		a[global_tid + piece_count * i] = feedback;
 	}
 }
 
@@ -165,32 +169,6 @@ __global__ void empty_encode(uint256_t* a, uint256_t* nonce, uint256_t farmer_id
 		a[global_tid * 128 + i] = feedback;
 	}
 }
-
-
-__global__ void encode_coalesced(uint256_t* a, uint256_t* nonce, uint256_t farmer_id, unsigned long long piece_count)
-{
-	__shared__ uint256_t s256[4];
-	__shared__ uint512_t s512[6];
-
-	unsigned global_tid = threadIdx.x + blockIdx.x * 128;  // 128 thread per block
-	uint256_t feedback = nonce[global_tid] ^ farmer_id;
-
-	uint256_t one = a[global_tid];
-	uint256_t two;
-
-#pragma unroll
-	for (int i = 0; i < 127; i++)
-	{
-		two = a[global_tid + piece_count * (i + 1)];
-		feedback = sqrt_permutation(one ^ feedback, s256, s512);
-		one = two;
-		a[global_tid + piece_count * i] = feedback;
-	}
-
-	feedback = sqrt_permutation(one ^ feedback, s256, s512);
-	a[global_tid + piece_count * 127] = feedback;
-}
-
 
 __global__ void empty_encode_coalesced(uint256_t* a, uint256_t* nonce, uint256_t farmer_id, unsigned long long piece_count)
 {
