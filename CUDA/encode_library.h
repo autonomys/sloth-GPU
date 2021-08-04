@@ -108,20 +108,25 @@ __device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 	PRIME;
 	EXP;
 
-	if (legendre(a)) {
-		a = montgomery_exponentiation(a, expo);
-		if (a.isOdd()) {
-			a = p - a;
-		}
+	uint256_t square_root = montgomery_exponentiation(a, expo);
+	if (square_root.isOdd()) {
+		square_root = p - square_root;
 	}
-	else {
-		a = p - a;
-		a = montgomery_exponentiation(a, expo);
-		if (a.isEven()) {
-			a = p - a;
-		}
+
+	uint256_t expo_2;
+	expo_2.low.low = 2;
+
+	uint256_t check_square_root = montgomery_exponentiation(square_root, expo_2);
+
+	if (check_square_root == a) {
+		return square_root;
 	}
-	return a;
+
+	if (square_root.isEven())
+		return square_root;
+	square_root = p - square_root;
+	return square_root;
+
 }
 
 __global__ void sqrt_caller(uint256_t* a)

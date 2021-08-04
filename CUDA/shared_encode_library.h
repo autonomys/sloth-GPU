@@ -80,62 +80,44 @@ __device__ __forceinline__ uint256_t shared_montgomery_exponentiation(uint256_t 
 	return s256[0];
 }
 
-/*__global__ void montgomery_caller(uint256_t *a, uint256_t expo) 
+__global__ void montgomery_caller(uint256_t *a, uint256_t expo) 
 {
 	*a = montgomery_exponentiation(*a, expo);
 	
-}*/
-
-__device__ __forceinline__ bool shared_legendre(uint256_t a, uint256_t s256[], uint512_t s512[])
-{
-	PRIME;
-
-	if (shared_montgomery_exponentiation(a, (p - 1) >> 1, s256, s512) == (p - 1))
-		return false;
-	else {
-		return true;
-	}
 }
 
-/*__global__ void legendre_caller(uint256_t *a) 
-{
-	bool result = legendre(*a);
-    if (result) {
-        printf("passed");
-    }
-    else {
-        printf("failed");
-    }
-}*/
 
-__device__ __forceinline__ uint256_t shared_sqrt_permutation(uint256_t a, uint256_t s256[], uint512_t s512[]) {
+
+__device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a, uint256_t s256[], uint512_t s512[]) {
 
 	PRIME;
 	EXP;
 
-	if (shared_legendre(a, s256, s512)) {
-		a = shared_montgomery_exponentiation(a, expo, s256, s512);
-		if (a.isOdd()) {
-			a = p - a;
-		}
-
-	}
-	else {
-		uint256_t zero;
-		a = p - a;
-		a = shared_montgomery_exponentiation(a, expo, s256, s512);
-		if (a.isEven()) {
-			a = p - a;
-		}
+	uint256_t square_root = montgomery_exponentiation(a, expo, s256, s512);
+	if (square_root.isOdd()) {
+		square_root = p - square_root;
 	}
 
-	return a;
+	uint256_t expo_2;
+	expo_2.low.low = 2;
+
+	uint256_t check_square_root = montgomery_exponentiation(square_root, expo_2, s256, s512);
+
+	if (check_square_root == a) {
+		return square_root;
+	}
+
+	if (square_root.isEven())
+		return square_root;
+	square_root = p - square_root;
+	return square_root;
+	
 }
 
-/*__global__ void sqrt_caller(uint256_t* a)
+__global__ void sqrt_caller(uint256_t* a)
 {
 	*a = sqrt_permutation(*a);
-}*/
+}
 
 __global__ void shared_encode(uint256_t* a, uint256_t* nonce, uint256_t farmer_id)
 {
