@@ -11,6 +11,8 @@ using namespace std;
 #define EXP uint256_t expo(4611686018427387903, 18446744073709551615, 18446744073709551615, 18446744073709551569)
 #define k 256
 
+#define num_threads 256
+
 __device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256_t y)
 {
 	PRIME;
@@ -78,10 +80,8 @@ __device__ __forceinline__ uint256_t montgomery_exponentiation(uint256_t a, uint
 	return c0;
 }
 
-__global__ void montgomery_caller(uint256_t *a) 
+__global__ void montgomery_caller(uint256_t *a, uint256_t expo) 
 {
-	EXP;
-
 	*a = montgomery_exponentiation(*a, expo);
 	
 }
@@ -113,21 +113,25 @@ __device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 	PRIME;
 	EXP;
 
-	if (legendre(a)) {
-		a = montgomery_exponentiation(a, expo);
-		if (a.isOdd()) {
-			a = p - a;
-		}
-	}
-	else {
-		a = p - a;
-		a = montgomery_exponentiation(a, expo);
-		if (a.isEven()) {
-			a = p - a;
-		}
+	uint256_t square_root = montgomery_exponentiation(a, expo);
+	if (square_root.isOdd()) {
+		square_root = p - square_root;
 	}
 
-	return a;
+	uint256_t expo_2;
+	expo_2.low.low = 2;
+
+	uint256_t check_square_root = montgomery_exponentiation(square_root, expo_2);
+
+	if (check_square_root == a) {
+		return square_root;
+	}
+
+	if (square_root.isEven())
+		return square_root;
+	square_root = p - square_root;
+	
+
 }
 
 __global__ void sqrt_caller(uint256_t* a)
@@ -135,14 +139,41 @@ __global__ void sqrt_caller(uint256_t* a)
 	*a = sqrt_permutation(*a);
 }
 
-__global__ void encode_test(uint256_t *a, uint256_t expanded_i)
+__global__ void encode(uint256_t* a, uint256_t* nonce, uint256_t farmer_id)
 {
-	uint256_t feedback = expanded_iv;
+	int global_idx = threadIdx.x + blockIdx.x * num_threads;
+
+	uint256_t feedback = nonce[global_idx] ^ farmer_id;
 
 #pragma unroll
 	for (int i = 0; i < 128; i++)
 	{
-		feedback = sqrt_permutation(a[threadIdx.x * 128 + i] ^ feedback);
-		a[threadIdx.x * 128 + i] = feedback;
+		feedback = sqrt_permutation(a[i + global_idx * 128] ^ feedback);
+		a[i + global_idx * 128] = feedback;
+
+		__syncthreads();
+	}
+}
+
+__global__ void encode_test(uint256_t* a, uint256_t expanded_iv)
+{
+	uint256_t feedback = expanded_iv;
+
+	//printf("%llu, %llu, %llu, %llu\n", feedback.high.high, feedback.high.low, feedback.low.high, feedback.low.low);
+
+#pragma unroll
+	for (int i = 0; i < 128; i++)
+	{
+		//printf("%llu, %llu, %llu, %llu\n", a[i].high.high, a[i].high.low, a[i].low.high, a[i].low.low);
+
+		uint256_t xor_result = a[i] ^ feedback;
+
+		//printf("%llu, %llu, %llu, %llu\n", xor_result.high.high, xor_result.high.low, xor_result.low.high, xor_result.low.low);
+
+		feedback = a[i] ^ feedback;
+
+		//printf("%llu, %llu, %llu, %llu\n", feedback.high.high, feedback.high.low, feedback.low.high, feedback.low.low);
+
+		a[i] = feedback;
 	}
 }
