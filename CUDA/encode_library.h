@@ -82,47 +82,30 @@ __global__ void montgomery_caller(uint256_t *a)
 	
 }
 
-__device__ __forceinline__ bool legendre(uint256_t a)
-{
-	PRIME;
-
-	if (montgomery_exponentiation(a, (p - 1) >> 1) == (p - 1))
-		return false;
-	else {
-		return true;
-	}
-}
-
-__global__ void legendre_caller(uint256_t *a) 
-{
-	bool result = legendre(*a);
-    if (result) {
-        printf("passed");
-    }
-    else {
-        printf("failed");
-    }
-}
-
 __device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 
 	PRIME;
 	EXP;
 
-	if (legendre(a)) {
-		a = montgomery_exponentiation(a, expo);
-		if (a.isOdd()) {
-			a = p - a;
-		}
+	uint256_t square_root = montgomery_exponentiation(a, expo);
+	if (square_root.isOdd()) {
+		square_root = p - square_root;
 	}
-	else {
-		a = p - a;
-		a = montgomery_exponentiation(a, expo);
-		if (a.isEven()) {
-			a = p - a;
-		}
+
+	uint256_t expo_2;
+	expo_2.low.low = 2;
+
+	uint256_t check_square_root = montgomery_exponentiation(square_root, expo_2);
+
+	if (check_square_root == a) {
+		return square_root;
 	}
-	return a;
+
+	if (square_root.isEven())
+		return square_root;
+	square_root = p - square_root;
+	return square_root;
+	
 }
 
 __global__ void sqrt_caller(uint256_t* a)
