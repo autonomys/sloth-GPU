@@ -87,7 +87,7 @@ public:
 		}
 		else if (shift > 128)
 		{
-			z.high = low >> (shift - 128);
+			z.high = low << (shift - 128);
 		}
 		else if (shift == 0)
 		{
