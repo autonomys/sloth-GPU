@@ -8,6 +8,34 @@ using namespace std;
 #define EXP uint256_t expo(4611686018427387903, 18446744073709551615, 18446744073709551615, 18446744073709551569)
 #define k 256
 
+
+
+__device__ __forceinline__ uint256_t weird_reduction(uint256_t a, uint256_t b)
+{
+	PRIME;
+
+	uint512_t temp = mul256x2(a, b);
+	uint256_t mull; mull.low.low = 189;
+
+	uint512_t temp2; temp2.low = temp.low;
+	temp = temp2 + mul256x2(temp.high, mull);
+	
+	uint512_t temp3; temp3.low = temp.low;
+
+	temp2.high = temp.high.low.low & 255;
+
+	temp = temp3 + mul256x2(temp2.high, mull);
+
+	temp3.low = temp.low;
+
+	temp2.high = temp.high.low.low & 1;
+
+	temp = temp3 + mul256x2(temp2.high, mull);
+
+	return (temp.low - p);
+
+}
+
 __device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256_t y)
 {
 	PRIME;
