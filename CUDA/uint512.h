@@ -119,6 +119,17 @@ public:
 		return z;
 	}
 
+	__host__ __device__ __forceinline__ uint512_t operator+(const uint512_t& r) const
+	{
+		uint512_t z;
+
+		z.low = low + r.low;
+
+		z.high = high + r.high + (z.low < low);
+
+		return z;
+	}
+
 	__host__ __device__ __forceinline__ bool operator<(const uint256_t& r) const
 {
 	if ((high.high.high ^ 0) | (high.high.low ^ 0) | (high.low.high ^ 0) | (high.low.low ^ 0))

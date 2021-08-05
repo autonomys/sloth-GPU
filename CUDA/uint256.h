@@ -193,6 +193,16 @@ public:
 		return z;
 	}
 
+	__host__ __device__ __forceinline__ uint256_t operator+(const uint64_t& r) const
+	{
+		uint256_t z;
+
+		z.low = low + r;
+		z.high = high + (z.low < low);
+
+		return z;
+	}
+
 	__host__ __device__ __forceinline__ bool operator<(const uint256_t& r) const
 	{
 		if (high < r.high)
