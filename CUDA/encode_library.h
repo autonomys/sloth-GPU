@@ -1,25 +1,26 @@
 // safe include
 #pragma once
+
 // CUSTOM IMPORTS
 #include "uint512.h"
+
 using namespace std;
+
 #define PRIME uint256_t p(18446744073709551615, 18446744073709551615, 18446744073709551615, 18446744073709551427)
 #define MU uint512_t mu(0, 0, 0, 1, 0, 0, 0, 189)
 #define EXP uint256_t expo(4611686018427387903, 18446744073709551615, 18446744073709551615, 18446744073709551569)
 #define k 256
 
 
-
 __device__ __forceinline__ uint256_t weird_reduction(uint256_t a, uint256_t b)
 {
-	PRIME;
-
+	
 	uint512_t temp = mul256x2(a, b);
 	uint256_t mull; mull.low.low = 189;
 
 	uint512_t temp2; temp2.low = temp.low;
 	temp = temp2 + mul256x2(temp.high, mull);
-	
+
 	uint512_t temp3; temp3.low = temp.low;
 
 	temp2.high = temp.high.low.low & 255;
@@ -32,14 +33,52 @@ __device__ __forceinline__ uint256_t weird_reduction(uint256_t a, uint256_t b)
 
 	temp = temp3 + mul256x2(temp2.high, mull);
 
-	return (temp.low - p);
+	return temp.low;
 
+}
+
+__device__ __forceinline__ uint256_t square_mul(uint256_t a, unsigned count, uint256_t b)
+{
+	uint256_t t = a;
+
+	while (count--)
+	{
+		t = weird_reduction(t, t);
+	}
+	t = weird_reduction(t, b);
+	return t;
+}
+
+__device__ __forceinline__ uint256_t addition_chain_reduce(uint256_t a)
+{
+	PRIME;
+
+	uint256_t x, y;
+
+	x = square_mul(a, 1, a);  /* 0x3 */
+	y = square_mul(x, 1, a);    /* 0x7 */
+	x = square_mul(y, 3, y);      /* 0x3f */
+	x = square_mul(x, 1, a);    /* 0x7f */
+	x = square_mul(x, 7, x);      /* 0x3fff */
+	x = square_mul(x, 14, x);     /* 0xfffffff */
+	x = square_mul(x, 3, y);      /* 0x7fffffff */
+	x = square_mul(x, 31, x);     /* 0x3fffffffffffffff */
+	x = square_mul(x, 62, x);     /* 0xfffffffffffffffffffffffffffffff */
+	x = square_mul(x, 124, x);    /* 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff */
+	x = square_mul(x, 2, a);    /* 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd */
+	x = square_mul(x, 4, a);    /* 0x3fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffd1 */
+
+	if (!(x < p))
+		return x - p;
+
+	return x;
 }
 
 __device__ __forceinline__ uint256_t modular_multiplication(uint256_t x, uint256_t y)
 {
 	PRIME;
 	MU;
+
 	/*uint512_t t = mul256x2(x, y);
 	uint256_t th = (t >> k).low; //since k is 256 we know that high 256 bits will be zero
 	uint512_t t1 = mul257_256(mu, th);
@@ -102,15 +141,59 @@ __device__ __forceinline__ uint256_t montgomery_exponentiation(uint256_t a, uint
 	return c0;
 }
 
-__global__ void montgomery_caller(uint256_t *a) 
+__global__ void montgomery_caller(uint256_t *a, uint256_t expo) 
 {
-	EXP;
-
 	*a = montgomery_exponentiation(*a, expo);
 	
 }
 
-__device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
+__device__ __forceinline__ bool legendre(uint256_t a)
+{
+	PRIME;
+
+	if (montgomery_exponentiation(a, (p - 1) >> 1) == (p - 1))
+		return false;
+	else {
+		return true;
+	}
+}
+
+__global__ void legendre_caller(uint256_t *a) 
+{
+	bool result = legendre(*a);
+    if (result) {
+        printf("passed");
+    }
+    else {
+        printf("failed");
+    }
+}
+
+__device__ __forceinline__ uint256_t sqrt_permutation_new(uint256_t a) {
+
+	PRIME;
+	EXP;
+
+	uint256_t square_root = addition_chain_reduce(a);
+	if (square_root.isOdd()) {
+		square_root = p - square_root;
+	}
+
+	uint256_t check_square_root = weird_reduction(square_root, square_root);
+	if (!(check_square_root < p))
+		check_square_root = check_square_root - p;
+
+	if (check_square_root == a) {
+		return square_root;
+	}
+
+	if (square_root.isEven())
+		square_root = p - square_root;
+	return square_root;
+
+}
+
+__device__ __forceinline__ uint256_t sqrt_permutation_mont(uint256_t a) {
 
 	PRIME;
 	EXP;
@@ -130,66 +213,75 @@ __device__ __forceinline__ uint256_t sqrt_permutation(uint256_t a) {
 	}
 
 	if (square_root.isEven())
-		return square_root;
-	square_root = p - square_root;
+		square_root = p - square_root;
 	return square_root;
-	
+
 }
 
-__global__ void sqrt_caller(uint256_t* a)
-{
-	*a = sqrt_permutation(*a);
+__device__ __forceinline__ uint256_t sqrt_permutation_old(uint256_t a) {
+
+	PRIME;
+	EXP;
+
+	if (legendre(a)) {
+		a = montgomery_exponentiation(a, expo);
+		if (a.isOdd()) {
+			a = p - a;
+		}
+	}
+	else {
+		a = p - a;
+		a = montgomery_exponentiation(a, expo);
+		if (a.isEven()) {
+			a = p - a;
+		}
+	}
+
+	return a;
 }
 
-__global__ void encode(uint256_t *a, uint256_t *nonce, uint256_t farmer_id)
+
+__global__ void encode_test_new(uint256_t* a, uint256_t expanded_iv)
 {
-	unsigned global_tid = blockIdx.x + blockDim.x * 128;  // 128 thread per block
-	uint256_t feedback = nonce[global_tid] ^ farmer_id;
+	uint256_t feedback = expanded_iv;
 
 #pragma unroll
 	for (int i = 0; i < 128; i++)
 	{
-		feedback = sqrt_permutation(a[global_tid * 128 + i] ^ feedback);
-		a[global_tid * 128 + i] = feedback;
+		uint256_t xor_result = a[i] ^ feedback;
+
+		feedback = sqrt_permutation_new(a[i] ^ feedback);
+
+		a[i] = feedback;
 	}
 }
 
-
-__global__ void encode_coalesced(uint256_t *a, uint256_t *nonce, uint256_t farmer_id, unsigned long long piece_count)
+__global__ void encode_test_mont(uint256_t* a, uint256_t expanded_iv)
 {
-	unsigned global_tid = blockIdx.x + blockDim.x * 128;  // 128 thread per block
-	uint256_t feedback = nonce[global_tid] ^ farmer_id;
+	uint256_t feedback = expanded_iv;
 
 #pragma unroll
 	for (int i = 0; i < 128; i++)
 	{
-		feedback = sqrt_permutation(a[global_tid + piece_count * i] ^ feedback);
-		a[global_tid + piece_count * i] = feedback;
+		uint256_t xor_result = a[i] ^ feedback;
+
+		feedback = sqrt_permutation_mont(a[i] ^ feedback);
+
+		a[i] = feedback;
 	}
 }
 
-__global__ void empty_encode(uint256_t* a, uint256_t* nonce, uint256_t farmer_id)
+__global__ void encode_test_old(uint256_t* a, uint256_t expanded_iv)
 {
-	unsigned global_tid = threadIdx.x + blockIdx.x * 128;  // 128 thread per block
-	uint256_t feedback = nonce[global_tid] ^ farmer_id;
+	uint256_t feedback = expanded_iv;
 
 #pragma unroll
 	for (int i = 0; i < 128; i++)
 	{
-		feedback = a[global_tid * 128 + i] ^ feedback;
-		a[global_tid * 128 + i] = feedback;
-	}
-}
+		uint256_t xor_result = a[i] ^ feedback;
 
-__global__ void empty_encode_coalesced(uint256_t* a, uint256_t* nonce, uint256_t farmer_id, unsigned long long piece_count)
-{
-	unsigned global_tid = threadIdx.x + blockIdx.x * 128;  // 128 thread per block
-	uint256_t feedback = nonce[global_tid] ^ farmer_id;
+		feedback = sqrt_permutation_old(a[i] ^ feedback);
 
-#pragma unroll
-	for (int i = 0; i < 128; i++)
-	{
-		feedback = a[global_tid + piece_count * i] ^ feedback;
-		a[global_tid + piece_count * i] = feedback;
+		a[i] = feedback;
 	}
 }
