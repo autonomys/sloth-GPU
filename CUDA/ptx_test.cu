@@ -6,7 +6,7 @@
 #include <bitset>
 #include <string>
 
-#include "extended_precision.h"
+#include "encode_ptx.h"
 
 using namespace std;
 
