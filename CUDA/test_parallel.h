@@ -440,27 +440,19 @@ __global__ void encode_ptx_test(u32* piece, u32* expanded_iv)
 	}
 }
 
-__global__ void encode_ptx_test_prefetch(u32* piece, u32* expanded_iv)
+__global__ void encode_ptx_test(u32* piece, u32* expanded_iv)
 {
 	int global_idx = threadIdx.x + blockIdx.x * blockDim.x;
 
-	u256 feedback, next, current;
+	u256 feedback;
 	eq_x_y(feedback, expanded_iv + global_idx * 8);
 
-	u32* chunk_ptr = piece + global_idx * 8 * 128;
-	eq_x_y(current, chunk_ptr);
-
-	for (int i = 0; i < 127; i++, chunk_ptr += 8)
+	for (int i = 0; i < 128; i++)
 	{
-		eq_x_y(next, chunk_ptr + 8);
+		u32* chunk_ptr = piece + i * blockDim.x * gridDim.x + global_idx * 8;
 
-		xor_x_y(feedback, current, feedback);
+		xor_x_y(feedback, chunk_ptr, feedback);
 		sqrt_permutation_ptx(chunk_ptr, feedback);
 		eq_x_y(feedback, chunk_ptr);
-
-		eq_x_y(current, next);
 	}
-
-	xor_x_y(feedback, current, feedback);
-	sqrt_permutation_ptx(chunk_ptr, feedback);
 }
