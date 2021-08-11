@@ -445,11 +445,11 @@ __global__ void encode_ptx_test(u32* piece, u32* expanded_iv)
 	int global_idx = threadIdx.x + blockIdx.x * blockDim.x;
 
 	u256 feedback;
-	eq_x_y(feedback, expanded_iv + global_idx * 8);
+	eq_x_y(feedback, expanded_iv);
 
 	for (int i = 0; i < 128; i++)
 	{
-		u32* chunk_ptr = piece + i * blockDim.x * gridDim.x + global_idx * 8;
+		u32* chunk_ptr = piece + i * 8 + global_idx * 8 * 128;
 
 		xor_x_y(feedback, chunk_ptr, feedback);
 		sqrt_permutation_ptx(chunk_ptr, feedback);
