@@ -6,7 +6,7 @@
 #include <bitset>
 #include <string>
 
-#include "encode_ptx.h"
+#include "test_parallel.h"
 
 using namespace std;
 
