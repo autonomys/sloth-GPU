@@ -259,7 +259,7 @@ static bool_t xor_n_check_mod_256_189(vec256 out, const vec256 a,
 #endif
 
 #if (__SIZEOF_INT128__-0==16 || __SIZEOF_LONG_LONG__-0==16) && \
-    !defined(__CUDA_ARCH__)
+    !defined(__CUDA_ARCH__) && !defined(__OPENCL_C_VERSION__)
 
 #if __SIZEOF_LONG_LONG__-0==16
 typedef unsigned long long u128;
