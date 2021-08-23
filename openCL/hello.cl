@@ -7,4 +7,9 @@ __kernel void hello(__global char* data, __global char* iv)
 		data[i] = 8;
 	}*/
 	sloth256_189_encode(data, 4096, iv, 1);	
+
+	/* PARALLEL VERSION 
+	int i = get_global_id(0);
+	sloth256_189_encode(data + i * 4096, 4096, iv, 1);	
+	*/
 }
