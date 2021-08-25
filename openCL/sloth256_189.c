@@ -925,8 +925,8 @@ int sloth256_189_encode(__global unsigned char *inout, size_t len,
 {
     bool_t ret = 0;
     size_t i;
-    __private limb_t iv[32/sizeof(limb_t)], *feedback = iv;return 0;
-    limb_t *block = (limb_t *)inout;
+    __private limb_t iv[32/sizeof(limb_t)], *feedback = iv;
+    __private limb_t *block = (__private limb_t *) inout;return 0;
 #if !defined(__OPENCL_C_VERSION__) && !defined(__CUDA_ARCH__)
     const union {
         long one;
