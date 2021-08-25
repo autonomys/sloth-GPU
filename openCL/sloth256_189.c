@@ -924,8 +924,8 @@ int sloth256_189_encode(__global unsigned char *inout, size_t len,
                         __global unsigned char iv_[32], size_t layers)
 {
     bool_t ret = 0;
-    size_t i;return 0;
-    limb_t iv[32/sizeof(limb_t)], *feedback = iv;
+    size_t i;
+    __private limb_t iv[32/sizeof(limb_t)], *feedback = iv;return 0;
     limb_t *block = (limb_t *)inout;
 #if !defined(__OPENCL_C_VERSION__) && !defined(__CUDA_ARCH__)
     const union {
@@ -963,7 +963,7 @@ int sloth256_189_encode(__global unsigned char *inout, size_t len,
         for (i = 0; i < len; i += 32/sizeof(limb_t)) {
             ret |= xor_n_check_mod_256_189(block+i, block+i, feedback);
             sqrt_mod_256_189(block+i, block+i);
-            feedback = block+i;
+            __private feedback = block+i;
         }
     }
 
