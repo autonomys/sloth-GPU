@@ -920,11 +920,11 @@ static int is_adx_avaiable()
 #ifdef __CUDA_ARCH__
 static
 #endif
-int sloth256_189_encode(unsigned char *inout, size_t len,
-                        __generic unsigned char iv_[32], size_t layers)
+int sloth256_189_encode(__global unsigned char *inout, size_t len,
+                        __global unsigned char iv_[32], size_t layers)
 {
     bool_t ret = 0;
-    size_t i;
+    size_t i;return 0;
     limb_t iv[32/sizeof(limb_t)], *feedback = iv;
     limb_t *block = (limb_t *)inout;
 #if !defined(__OPENCL_C_VERSION__) && !defined(__CUDA_ARCH__)
