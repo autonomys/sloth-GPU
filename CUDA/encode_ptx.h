@@ -14,26 +14,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 	asm("{\n\t"
 
 		// x * y0
-
-		/*"mul.lo.u32      %0, %16, %24;"
-		"mul.hi.u32      %1, %16, %24;"
-		"mul.hi.u32      %2, %17, %24;"
-		"mul.hi.u32      %3, %18, %24;"
-		"mul.hi.u32      %4, %19, %24;"
-		"mul.hi.u32      %5, %20, %24;"
-		"mul.hi.u32      %6, %21, %24;"
-		"mul.hi.u32      %7, %22, %24;"
-		"mul.hi.u32      %8, %23, %24;"
-
-		"mad.lo.cc.u32   %1, %17, %24, %1;"
-		"madc.lo.cc.u32  %2, %18, %24, %2;"
-		"madc.lo.cc.u32  %3, %19, %24, %3;"
-		"madc.lo.cc.u32  %4, %20, %24, %4;"
-		"madc.lo.cc.u32  %5, %21, %24, %5;"
-		"madc.lo.cc.u32  %6, %22, %24, %6;"
-		"madc.lo.cc.u32  %7, %23, %24, %7;"
-		"addc.u32        %8, %8, 0;"*/
-
 		"mul.lo.u32      %0, %16, %24;"
 		"mul.hi.u32      %1, %16, %24;"
 		"mul.lo.u32      %2, %18, %24;"
@@ -53,26 +33,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"madc.hi.u32     %8, %23, %24, 0;"
 
 		// x * y1
-
-		/*"mad.lo.cc.u32   %1, %16, %25, %1;"
-		"madc.hi.cc.u32  %2, %16, %25, %2;"
-		"madc.hi.cc.u32  %3, %17, %25, %3;"
-		"madc.hi.cc.u32  %4, %18, %25, %4;"
-		"madc.hi.cc.u32  %5, %19, %25, %5;"
-		"madc.hi.cc.u32  %6, %20, %25, %6;"
-		"madc.hi.cc.u32  %7, %21, %25, %7;"
-		"madc.hi.cc.u32  %8, %22, %25, %8;"
-		"madc.hi.u32     %9, %23, %25, 0;"
-
-		"mad.lo.cc.u32   %2, %17, %25, %2;"
-		"madc.lo.cc.u32  %3, %18, %25, %3;"
-		"madc.lo.cc.u32  %4, %19, %25, %4;"
-		"madc.lo.cc.u32  %5, %20, %25, %5;"
-		"madc.lo.cc.u32  %6, %21, %25, %6;"
-		"madc.lo.cc.u32  %7, %22, %25, %7;"
-		"madc.lo.cc.u32  %8, %23, %25, %8;"
-		"addc.u32        %9, %9, 0;"*/
-
 		"mad.lo.cc.u32   %1, %16, %25, %1;"
 		"madc.hi.cc.u32  %2, %16, %25, %2;"
 		"madc.lo.cc.u32  %3, %18, %25, %3;"
@@ -93,26 +53,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"madc.hi.u32     %9, %23, %25, %9;"
 
 		// x * y2
-
-		/*"mad.lo.cc.u32   %2, %16, %26, %2;"
-		"madc.hi.cc.u32  %3, %16, %26, %3;"
-		"madc.hi.cc.u32  %4, %17, %26, %4;"
-		"madc.hi.cc.u32  %5, %18, %26, %5;"
-		"madc.hi.cc.u32  %6, %19, %26, %6;"
-		"madc.hi.cc.u32  %7, %20, %26, %7;"
-		"madc.hi.cc.u32  %8, %21, %26, %8;"
-		"madc.hi.cc.u32  %9, %22, %26, %9;"
-		"madc.hi.u32     %10, %23, %26, 0;"
-
-		"mad.lo.cc.u32   %3, %17, %26, %3;"
-		"madc.lo.cc.u32  %4, %18, %26, %4;"
-		"madc.lo.cc.u32  %5, %19, %26, %5;"
-		"madc.lo.cc.u32  %6, %20, %26, %6;"
-		"madc.lo.cc.u32  %7, %21, %26, %7;"
-		"madc.lo.cc.u32  %8, %22, %26, %8;"
-		"madc.lo.cc.u32  %9, %23, %26, %9;"
-		"addc.u32        %10, %10, 0;"*/
-
 		"mad.lo.cc.u32   %2, %16, %26, %2;"
 		"madc.hi.cc.u32  %3, %16, %26, %3;"
 		"madc.lo.cc.u32  %4, %18, %26, %4;"
@@ -133,26 +73,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"madc.hi.u32     %10, %23, %26, %10;"
 
 		// x * y3
-
-		/*"mad.lo.cc.u32   %3, %16, %27, %3;"
-		"madc.hi.cc.u32  %4, %16, %27, %4;"
-		"madc.hi.cc.u32  %5, %17, %27, %5;"
-		"madc.hi.cc.u32  %6, %18, %27, %6;"
-		"madc.hi.cc.u32  %7, %19, %27, %7;"
-		"madc.hi.cc.u32  %8, %20, %27, %8;"
-		"madc.hi.cc.u32  %9, %21, %27, %9;"
-		"madc.hi.cc.u32  %10, %22, %27, %10;"
-		"madc.hi.u32     %11, %23, %27, 0;"
-
-		"mad.lo.cc.u32   %4, %17, %27, %4;"
-		"madc.lo.cc.u32  %5, %18, %27, %5;"
-		"madc.lo.cc.u32  %6, %19, %27, %6;"
-		"madc.lo.cc.u32  %7, %20, %27, %7;"
-		"madc.lo.cc.u32  %8, %21, %27, %8;"
-		"madc.lo.cc.u32  %9, %22, %27, %9;"
-		"madc.lo.cc.u32  %10, %23, %27, %10;"
-		"addc.u32        %11, %11, 0;"*/
-
 		"mad.lo.cc.u32   %3, %16, %27, %3;"
 		"madc.hi.cc.u32  %4, %16, %27, %4;"
 		"madc.lo.cc.u32  %5, %18, %27, %5;"
@@ -173,26 +93,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"madc.hi.u32     %11, %23, %27, %11;"
 
 		// x * y4
-
-		/*"mad.lo.cc.u32   %4, %16, %28, %4;"
-		"madc.hi.cc.u32  %5, %16, %28, %5;"
-		"madc.hi.cc.u32  %6, %17, %28, %6;"
-		"madc.hi.cc.u32  %7, %18, %28, %7;"
-		"madc.hi.cc.u32  %8, %19, %28, %8;"
-		"madc.hi.cc.u32  %9, %20, %28, %9;"
-		"madc.hi.cc.u32  %10, %21, %28, %10;"
-		"madc.hi.cc.u32  %11, %22, %28, %11;"
-		"madc.hi.u32     %12, %23, %28, 0;"
-
-		"mad.lo.cc.u32   %5, %17, %28, %5;"
-		"madc.lo.cc.u32  %6, %18, %28, %6;"
-		"madc.lo.cc.u32  %7, %19, %28, %7;"
-		"madc.lo.cc.u32  %8, %20, %28, %8;"
-		"madc.lo.cc.u32  %9, %21, %28, %9;"
-		"madc.lo.cc.u32  %10, %22, %28, %10;"
-		"madc.lo.cc.u32  %11, %23, %28, %11;"
-		"addc.u32        %12, %12, 0;"*/
-
 		"mad.lo.cc.u32   %4, %16, %28, %4;"
 		"madc.hi.cc.u32  %5, %16, %28, %5;"
 		"madc.lo.cc.u32  %6, %18, %28, %6;"
@@ -213,26 +113,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"madc.hi.u32     %12, %23, %28, %12;"
 
 		// x * y5
-
-		/*"mad.lo.cc.u32   %5, %16, %29, %5;"
-		"madc.hi.cc.u32  %6, %16, %29, %6;"
-		"madc.hi.cc.u32  %7, %17, %29, %7;"
-		"madc.hi.cc.u32  %8, %18, %29, %8;"
-		"madc.hi.cc.u32  %9, %19, %29, %9;"
-		"madc.hi.cc.u32  %10, %20, %29, %10;"
-		"madc.hi.cc.u32  %11, %21, %29, %11;"
-		"madc.hi.cc.u32  %12, %22, %29, %12;"
-		"madc.hi.u32     %13, %23, %29, 0;"
-
-		"mad.lo.cc.u32   %6, %17, %29, %6;"
-		"madc.lo.cc.u32  %7, %18, %29, %7;"
-		"madc.lo.cc.u32  %8, %19, %29, %8;"
-		"madc.lo.cc.u32  %9, %20, %29, %9;"
-		"madc.lo.cc.u32  %10, %21, %29, %10;"
-		"madc.lo.cc.u32  %11, %22, %29, %11;"
-		"madc.lo.cc.u32  %12, %23, %29, %12;"
-		"addc.u32        %13, %13, 0;"*/
-
 		"mad.lo.cc.u32   %5, %16, %29, %5;"
 		"madc.hi.cc.u32  %6, %16, %29, %6;"
 		"madc.lo.cc.u32  %7, %18, %29, %7;"
@@ -253,26 +133,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"madc.hi.u32     %13, %23, %29, %13;"
 
 		// x * y6
-
-		/*"mad.lo.cc.u32   %6, %16, %30, %6;"
-		"madc.hi.cc.u32  %7, %16, %30, %7;"
-		"madc.hi.cc.u32  %8, %17, %30, %8;"
-		"madc.hi.cc.u32  %9, %18, %30, %9;"
-		"madc.hi.cc.u32  %10, %19, %30, %10;"
-		"madc.hi.cc.u32  %11, %20, %30, %11;"
-		"madc.hi.cc.u32  %12, %21, %30, %12;"
-		"madc.hi.cc.u32  %13, %22, %30, %13;"
-		"madc.hi.u32     %14, %23, %30, 0;"
-
-		"mad.lo.cc.u32   %7, %17, %30, %7;"
-		"madc.lo.cc.u32  %8, %18, %30, %8;"
-		"madc.lo.cc.u32  %9, %19, %30, %9;"
-		"madc.lo.cc.u32  %10, %20, %30, %10;"
-		"madc.lo.cc.u32  %11, %21, %30, %11;"
-		"madc.lo.cc.u32  %12, %22, %30, %12;"
-		"madc.lo.cc.u32  %13, %23, %30, %13;"
-		"addc.u32        %14, %14, 0;"*/
-
 		"mad.lo.cc.u32   %6, %16, %30, %6;"
 		"madc.hi.cc.u32  %7, %16, %30, %7;"
 		"madc.lo.cc.u32  %8, %18, %30, %8;"
@@ -293,26 +153,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"madc.hi.u32     %14, %23, %30, %14;"
 
 		// x * y7
-
-		/*"mad.lo.cc.u32   %7, %16, %31, %7;"
-		"madc.hi.cc.u32  %8, %16, %31, %8;"
-		"madc.hi.cc.u32  %9, %17, %31, %9;"
-		"madc.hi.cc.u32  %10, %18, %31, %10;"
-		"madc.hi.cc.u32  %11, %19, %31, %11;"
-		"madc.hi.cc.u32  %12, %20, %31, %12;"
-		"madc.hi.cc.u32  %13, %21, %31, %13;"
-		"madc.hi.cc.u32  %14, %22, %31, %14;"
-		"madc.hi.u32     %15, %23, %31, 0;"
-
-		"mad.lo.cc.u32   %8, %17, %31, %8;"
-		"madc.lo.cc.u32  %9, %18, %31, %9;"
-		"madc.lo.cc.u32  %10, %19, %31, %10;"
-		"madc.lo.cc.u32  %11, %20, %31, %11;"
-		"madc.lo.cc.u32  %12, %21, %31, %12;"
-		"madc.lo.cc.u32  %13, %22, %31, %13;"
-		"madc.lo.cc.u32  %14, %23, %31, %14;"
-		"addc.u32        %15, %15, 0;"*/
-
 		"mad.lo.cc.u32   %7, %16, %31, %7;"
 		"madc.hi.cc.u32  %8, %16, %31, %8;"
 		"madc.lo.cc.u32  %9, %18, %31, %9;"
@@ -342,25 +182,6 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 
 	//out_hi[256] * 189 + out_low[256]
 	asm("{\n\t"
-
-		/*"mad.lo.cc.u32   %0, %9, 189, %17;"
-		"madc.hi.cc.u32  %1, %9, 189, %18;"
-		"madc.hi.cc.u32  %2, %10, 189, %19;"
-		"madc.hi.cc.u32  %3, %11, 189, %20;"
-		"madc.hi.cc.u32  %4, %12, 189, %21;"
-		"madc.hi.cc.u32  %5, %13, 189, %22;"
-		"madc.hi.cc.u32  %6, %14, 189, %23;"
-		"madc.hi.cc.u32  %7, %15, 189, %24;"
-		"madc.hi.u32     %8, %16, 189, 0;"
-
-		"mad.lo.cc.u32   %1, %10, 189, %1;"
-		"madc.lo.cc.u32  %2, %11, 189, %2;"
-		"madc.lo.cc.u32  %3, %12, 189, %3;"
-		"madc.lo.cc.u32  %4, %13, 189, %4;"
-		"madc.lo.cc.u32  %5, %14, 189, %5;"
-		"madc.lo.cc.u32  %6, %15, 189, %6;"
-		"madc.lo.cc.u32  %7, %16, 189, %7;"
-		"addc.u32        %8, %8, 0;"*/
 
 		"mad.lo.cc.u32   %0, %9, 189, %17;"
 		"madc.hi.cc.u32  %1, %9, 189, %18;"
