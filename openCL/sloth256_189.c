@@ -1,3 +1,4 @@
+
 #ifndef __OPENCL_C_VERSION__
 #include <stdlib.h>
 
@@ -219,7 +220,7 @@ static void squarex_mod_256_189(vec256 out, const vec256 inp)
 
 #else   /* no-asm */
 
-static void cneg_mod_256_189(vec256 out, const vec256 a, bool_t cbit)
+static void cneg_mod_256_189(__generic vec256 out, __generic const vec256 a, bool_t cbit)
 {
     limb_t mask, carry;
     size_t i;
@@ -240,8 +241,8 @@ static void cneg_mod_256_189(vec256 out, const vec256 a, bool_t cbit)
         out[i] += carry, carry = out[i] < carry;
 }
 
-static bool_t xor_n_check_mod_256_189(vec256 out, const vec256 a,
-                                                  const vec256 b)
+static bool_t xor_n_check_mod_256_189(__generic vec256 out, __generic const vec256 a,
+                                                 __generic const vec256 b)
 {
     size_t i;
     limb_t carry;
@@ -849,7 +850,7 @@ static void sqr_n_mul_fe26(fe26 out, const fe26 a, size_t count,
     mul_mod_256_189(out, t, b);
 }
 
-static bool_t sqrt_mod_256_189(vec256 out, const vec256 inp)
+static bool_t sqrt_mod_256_189(__generic vec256 out, __generic const vec256 inp)
 {
     fe26 x, y, z;
     vec256 sqr, ret;
@@ -881,7 +882,7 @@ static bool_t sqrt_mod_256_189(vec256 out, const vec256 inp)
     return neg;
 }
 
-static void square_mod_256_189(vec256 out, const vec256 inp)
+static void square_mod_256_189(__generic vec256 out, __generic const vec256 inp)
 {
     bool_t neg = (bool_t)(inp[0]&1);
     fe26 x;
@@ -920,7 +921,7 @@ static int is_adx_avaiable()
 static
 #endif
 int sloth256_189_encode(unsigned char *inout, size_t len,
-                        const unsigned char iv_[32], size_t layers)
+                        __generic unsigned char iv_[32], size_t layers)
 {
     bool_t ret = 0;
     size_t i;
