@@ -175,7 +175,7 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"}"
 		: "=r"(out[0]), "=r"(out[1]), "=r"(out[2]), "=r"(out[3]), "=r"(out[4]), "=r"(out[5]), "=r"(out[6]), "=r"(out[7]), "=r"(temp_hi[0]), "=r"(temp_hi[1]), "=r"(temp_hi[2]), "=r"(temp_hi[3]), "=r"(temp_hi[4]), "=r"(temp_hi[5]), "=r"(temp_hi[6]), "=r"(temp_hi[7])
 		: "r"(x[0]), "r"(x[1]), "r"(x[2]), "r"(x[3]), "r"(x[4]), "r"(x[5]), "r"(x[6]), "r"(x[7]), "r"(y[0]), "r"(y[1]), "r"(y[2]), "r"(y[3]), "r"(y[4]), "r"(y[5]), "r"(y[6]), "r"(y[7]));
-	
+
 	u32 temp_hi8;
 
 	// lazy reduction
@@ -205,7 +205,7 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 		"}"
 		: "=r"(out[0]), "=r"(out[1]), "=r"(out[2]), "=r"(out[3]), "=r"(out[4]), "=r"(out[5]), "=r"(out[6]), "=r"(out[7]), "=r"(temp_hi8)
 		: "r"(temp_hi[0]), "r"(temp_hi[1]), "r"(temp_hi[2]), "r"(temp_hi[3]), "r"(temp_hi[4]), "r"(temp_hi[5]), "r"(temp_hi[6]), "r"(temp_hi[7]), "r"(out[0]), "r"(out[1]), "r"(out[2]), "r"(out[3]), "r"(out[4]), "r"(out[5]), "r"(out[6]), "r"(out[7]));
-	
+
 	u32 temp_hi1;
 
 	//out_hi[8] * 189 + out_low[256]
@@ -243,34 +243,35 @@ __device__ __forceinline__ void mul_reduce_256(u256 out, const u256 x, const u25
 			: "=r"(out[0]), "=r"(out[1]), "=r"(out[2]), "=r"(out[3]), "=r"(out[4]), "=r"(out[5]), "=r"(out[6]), "=r"(out[7])
 			: "r"(out[0]), "r"(out[1]), "r"(out[2]), "r"(out[3]), "r"(out[4]), "r"(out[5]), "r"(out[6]), "r"(out[7]));
 	}
-		
+
 }
 
 __device__ __forceinline__ void square_mul_reduce_256(u256 out, const u256 x, unsigned count, const u256 y)
-{
+{   // squares x, multiplies is with itself `count` times, then multiplies this result with `y` in the end.
+	// all operations are done in modulo prime
 	u256 temp;
 
-	mul_reduce_256(temp, x, x);
+	mul_reduce_256(temp, x, x);  // temp = x * x
 
 	while (--count)
-		mul_reduce_256(temp, temp, temp);
+		mul_reduce_256(temp, temp, temp);  // temp = temp * temp
 
-	mul_reduce_256(out, temp, y);
+	mul_reduce_256(out, temp, y);  // out = temp * y
 }
 
 __device__ __forceinline__ bool check_ge_prime(const u256 x)
-{
+{  // checks if prime is greater than prime
 	if ((x[7] >= 4294967295) & (x[6] >= 4294967295) & (x[5] >= 4294967295) & (x[4] >= 4294967295)
 		& (x[3] >= 4294967295) & (x[2] >= 4294967295) & (x[1] >= 4294967295) & (x[0] >= 4294967107))
 	{
 		return true;
 	}
-		
+
 	return false;
 }
 
 __device__ __forceinline__ bool check_eq_x_y(const u256 x, const u256 y)
-{
+{  // checks if x and y are equal
 	if ((x[7] == y[7]) & (x[6] == y[6]) & (x[5] == y[5]) & (x[4] == y[4])
 		& (x[3] == y[3]) & (x[2] == y[2]) & (x[1] == y[1]) & (x[0] == y[0]))
 	{
@@ -281,7 +282,7 @@ __device__ __forceinline__ bool check_eq_x_y(const u256 x, const u256 y)
 }
 
 __device__ __forceinline__ bool check_odd(const u256 x)
-{
+{  // checks if x is odd
 	if (x[0] & 1)
 		return true;
 
@@ -289,7 +290,7 @@ __device__ __forceinline__ bool check_odd(const u256 x)
 }
 
 __device__ __forceinline__ bool check_even(const u256 x)
-{
+{  // checks if x is even
 	if (x[0] & 1)
 		return false;
 
@@ -297,7 +298,7 @@ __device__ __forceinline__ bool check_even(const u256 x)
 }
 
 __device__ __forceinline__ void x_minus_prime(u256 x)
-{
+{  // x = x - p
 	asm("{\n\t"
 
 		"sub.cc.u32     %0, %8, 4294967107;"
@@ -315,7 +316,7 @@ __device__ __forceinline__ void x_minus_prime(u256 x)
 }
 
 __device__ __forceinline__ void prime_minus_x(u256 x)
-{
+{  // x = p - x
 	asm("{\n\t"
 
 		"sub.cc.u32     %0, 4294967107, %8;"
@@ -333,7 +334,7 @@ __device__ __forceinline__ void prime_minus_x(u256 x)
 }
 
 __device__ __forceinline__ void xor_x_y(u256 out, u256 x, u256 y)
-{
+{  // x = x^y
 	out[0] = x[0] ^ y[0];
 	out[1] = x[1] ^ y[1];
 	out[2] = x[2] ^ y[2];
@@ -345,7 +346,7 @@ __device__ __forceinline__ void xor_x_y(u256 out, u256 x, u256 y)
 }
 
 __device__ __forceinline__ void eq_x_y(u256 x, const u256 y)
-{
+{  // x = y
 	x[0] = y[0];
 	x[1] = y[1];
 	x[2] = y[2];
@@ -378,36 +379,46 @@ __device__ __forceinline__ void addition_chain_reduce_256(u256 out, const u256 x
 }
 
 __device__ __forceinline__ void sqrt_permutation_ptx(u256 out, u256 x)
-{
-	addition_chain_reduce_256(out, x);
+{   // finds the square root of x in SLOTH setting
 
-	if (check_odd(out)) {
+	addition_chain_reduce_256(out, x);  // out = pow(x, (prime+1)/4, prime)
+
+	if (check_odd(out)) {  // if the number is odd, we have to negate the square-root
 		prime_minus_x(out);
 	}
 
+	// check if square of x is the same with input (this check is necessary,
+	// since there are some numbers that do not have square roots,
+	// but their negations do have, read the SLOTH paper for more details).
+	// Then negate the result, and assign this to variable `neg`.
+	// So, if our computed square_root's square equals to input, this means
+	// the input indeed has a square root and we found it
 	u256 check_candidate;
 	mul_reduce_256(check_candidate, out, out);
 
+	// because of lazy-reduction in mul_reduce, we have to check the result is greater than prime
 	if (check_ge_prime(check_candidate)) {
-		x_minus_prime(check_candidate);
+		x_minus_prime(check_candidate);  // if so, apply the reduction. One check is enough, lazy-reduction guarantees that
 	}
-		
-	if (check_eq_x_y(check_candidate, x)) {}
+
+
+	if (check_eq_x_y(check_candidate, x)) {}  // means we have found the correct square root
 	else {
 		if (check_even(out)) {
-			prime_minus_x(out);
+			prime_minus_x(out);  // negate the square-root accordingly with it being even-odd.
 		}
 	}
 }
 
 __global__ void encode_ptx(u256* piece, u256* nonce, u256* farmer_id)
-{
-	int global_idx = threadIdx.x + blockIdx.x * blockDim.x;
+{    // in this version, expanded_iv will be computed from nonce array and farmer_id
+
+	int global_idx = threadIdx.x + blockIdx.x * blockDim.x;  // global index of the thread
 
 	u256 feedback;
-	xor_x_y(feedback, nonce[global_idx], *farmer_id);
+	xor_x_y(feedback, nonce[global_idx], *farmer_id);  // computation of the expanded_iv from nonce array
 
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < 128; i++)  // actual sloth_encoding
 	{
 		xor_x_y(feedback, piece[i + global_idx * 128], feedback);
 		sqrt_permutation_ptx(piece[i + global_idx * 128], feedback);
@@ -416,15 +427,19 @@ __global__ void encode_ptx(u256* piece, u256* nonce, u256* farmer_id)
 }
 
 __global__ void encode_ptx_test(u32* piece, u32* expanded_iv)
-{
-	int global_idx = threadIdx.x + blockIdx.x * blockDim.x;
+{   // in this version, expanded_iv will be given directly
+
+	int global_idx = threadIdx.x + blockIdx.x * blockDim.x;  // global index of the thread
 
 	u256 feedback;
-	eq_x_y(feedback, expanded_iv + global_idx * 8);
+	eq_x_y(feedback, expanded_iv + global_idx * 8);  // getting the related feedback from the expanded_iv array
 
-	for (int i = 0; i < 128; i++)
+	for (int i = 0; i < 128; i++)  // actual sloth_encoding
 	{
-		u32* chunk_ptr = piece + i * 8 + global_idx * 8 * 128;
+		u32* chunk_ptr = piece + i * 8 + global_idx * 8 * 128;  // alternate approach to reach piece[i + global_idx * 128]
+		// it is ok to replace `chunk_ptr` with `piece[i + global_idx * 128]`
+		// the reason for extra multiplication with 8's are, unsigned long long's are taking 8 bytes.
+		// this alternate approach may come in hand in the future if we are going to experiment more on coalesced memory access.
 
 		xor_x_y(feedback, chunk_ptr, feedback);
 		sqrt_permutation_ptx(chunk_ptr, feedback);
