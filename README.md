@@ -4,28 +4,17 @@ GPU implementation of sloth (CUDA and OpenCL)
 
 ## CUDA
 
-### uint_t Libraries
----
-1. uint128_t
-2. uint256_t
-3. uint512_t
+- Old implementation (high-level implementation using Montgomery and Legendre) can be found in by rolling back to previous commits.
+- `Experimentation-ptx` includes test files for experimenting with the current ptx implementation (can be found in by rolling back to previous commits).
+- The files `encode_ptx.h` and `ptx_text.cu` are the current PTX implementation of Sloth Encoding.
+- `c-code` includes files for another approach that utilizes low-level code written for assembly in `.c` and adapts that into CUDA (for building this code, please refer to the `README.md` file in this folder).
 
-### Misc Functions
----
-1. Legendre
-2. Montgomery
-
-
-## OpenCL
+*For building the CUDA code in your machine, please refer to the `README.md` in the `CUDA` folder.*
 
 
 ## Research
 
-*Required Operations for the sqrt-permuatation (high-level only):*
-1. Jacobi (legendre can be a better fit for our needs)
-2. Modular Exponentiation (choose the best Montgomery for this)
-3. IsOdd (to be implemented in uint_t libraries directly)
-4. IsEven (to be implemented in uint_t libraries directly)
-5. Subtract (to be implemented in uint_t libraries directly)
-
-**Note:** All the other details for the implementation of the sqrt-permuatation can be found in *Research* folder (i.e. requirements for Montgomery, all the other operations needed for sqrt-permutation in low-level, etc...).
+1. Removal of Jacobi (check the result by squaring it, if it is incorrect, negate it)
+2. Perform modular multiplication via Addition Chain (Montgomery not required)
+3. Using fast-reduction for modulo operations
+4. Other required operations are in the `Research/operations-tree.md`
