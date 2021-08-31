@@ -2,7 +2,7 @@
 
 ## What Does This Library Do?
 
-As Subspace Labs, we are utilizing [Sloth](https://eprint.iacr.org/2015/366.pdf) as our encoding/decoding scheme in our protocol.
+As Subspace Labs, we are utilizing [Sloth's internal permutation](https://eprint.iacr.org/2015/366.pdf) as our encoding/decoding scheme in our protocol.
 
 Encoding of Sloth (and the most other alternatives) is intentionally slow, because of security measures. And because of this property, `plotting` phase requires a considerable amount of time to finish (required time is linear with the size of the space being dedicated to the protocol). To enhance user-experience, we decided to take advantage of the commonly found, massively parallel hardwares (GPUs).
 This repository is the parallelized version of the Sloth's Encoding scheme, specifically for the NVidia GPUs.
